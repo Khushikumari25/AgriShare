@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile — AgriShare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --green:#0B3D2E; --green-mid:#145a3c; --green-light:#1e7a52;
+      --accent:#f5a623; --beige:#F5F1E8; --beige2:#ede8da;
+      --text:#1a1a1a; --muted:#6b7280; --border:#d1d5db; --white:#ffffff; --red:#e53e3e;
+      --shadow:0 2px 12px rgba(11,61,46,0.10); --radius:10px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Poppins',sans-serif;background:var(--beige);color:var(--text);min-height:100vh}
+
+    .navbar{background:var(--green);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+    .nav-logo{color:var(--white);font-size:1.3rem;font-weight:700;text-decoration:none}
+    .nav-logo span{color:var(--accent)}
+    .nav-back{color:rgba(255,255,255,0.8);font-size:0.88rem;text-decoration:none}
+    .nav-back:hover{color:var(--white)}
+
+    .page-wrap{max-width:800px;margin:28px auto;padding:0 16px 48px}
+
+    /* Profile Hero */
+    .profile-hero{background:linear-gradient(135deg,var(--green) 0%,var(--green-mid) 100%);border-radius:var(--radius);padding:28px;color:var(--white);display:flex;align-items:center;gap:20px;margin-bottom:20px;position:relative;overflow:hidden}
+    .profile-hero::before{content:'🌾';position:absolute;right:20px;top:10px;font-size:5rem;opacity:.08}
+
+    /* Photo upload */
+    .photo-wrap{position:relative;flex-shrink:0}
+    .profile-photo{width:90px;height:90px;border-radius:50%;border:3px solid var(--accent);object-fit:cover;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:var(--white);cursor:pointer;overflow:hidden}
+    .profile-photo img{width:100%;height:100%;object-fit:cover}
+    .photo-edit-btn{position:absolute;bottom:0;right:0;width:26px;height:26px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;cursor:pointer;border:2px solid var(--white)}
+    .photo-input{display:none}
+    .photo-uploading{position:absolute;inset:0;background:rgba(0,0,0,0.5);border-radius:50%;display:none;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700}
+
+    .profile-hero-info h2{font-size:1.2rem;font-weight:700;margin-bottom:4px}
+    .profile-hero-info p{font-size:0.82rem;color:rgba(255,255,255,0.75);margin-bottom:8px}
+    .role-pill{display:inline-block;background:var(--accent);color:var(--green);font-size:0.72rem;font-weight:700;padding:3px 12px;border-radius:20px;text-transform:capitalize}
+
+    /* Form card */
+    .form-card{background:var(--white);border-radius:var(--radius);border:1.5px solid var(--border);overflow:hidden;margin-bottom:18px}
+    .form-section-header{padding:14px 20px;border-bottom:1.5px solid var(--beige2);font-size:0.88rem;font-weight:700;color:var(--green);display:flex;align-items:center;gap:8px}
+    .form-body{padding:20px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .form-group{display:flex;flex-direction:column;gap:5px}
+    .form-group label{font-size:0.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+    .form-group input,.form-group select{border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;font-size:0.88rem;font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s;color:var(--text)}
+    .form-group input:focus,.form-group select:focus{border-color:var(--green-light)}
+    .form-group input:disabled{background:var(--beige);color:var(--muted)}
+    .form-group.full{grid-column:1/-1}
+
+    .save-btn{background:var(--green);color:var(--white);border:none;border-radius:8px;padding:11px 28px;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;transition:background .2s;display:flex;align-items:center;gap:8px}
+    .save-btn:hover{background:var(--green-light)}
+    .save-btn:disabled{opacity:.6;cursor:not-allowed}
+
+    .alert{padding:11px 16px;border-radius:8px;font-size:0.85rem;font-weight:500;margin-bottom:14px;display:none;align-items:center;gap:8px}
+    .alert.success{background:#d1fae5;color:#065f46;display:flex}
+    .alert.error{background:#fee2e2;color:#991b1b;display:flex}
+
+    /* WhatsApp card */
+    .whatsapp-card{background:var(--white);border-radius:var(--radius);border:1.5px solid var(--border);overflow:hidden;margin-bottom:18px}
+    .wa-header{background:#25D366;padding:14px 20px;color:var(--white);display:flex;align-items:center;gap:10px}
+    .wa-header h2{font-size:0.9rem;font-weight:700}
+    .wa-body{padding:16px 20px}
+    .wa-toggle-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--beige2)}
+    .wa-toggle-row:last-child{border-bottom:none}
+    .wa-toggle-label{font-size:0.85rem;font-weight:500}
+    .wa-toggle-sub{font-size:0.72rem;color:var(--muted);margin-top:2px}
+    .toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+    .toggle input{opacity:0;width:0;height:0}
+    .toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:24px;cursor:pointer;transition:background .2s}
+    .toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:white;border-radius:50%;transition:transform .2s}
+    .toggle input:checked+.toggle-slider{background:#25D366}
+    .toggle input:checked+.toggle-slider::before{transform:translateX(20px)}
+
+    .wa-test-btn{display:flex;align-items:center;gap:8px;background:#25D366;color:var(--white);border:none;border-radius:8px;padding:9px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;text-decoration:none;margin-top:14px;width:fit-content;transition:opacity .2s}
+    .wa-test-btn:hover{opacity:.88}
+
+    /* Stats mini */
+    .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+    .mini-stat{background:var(--white);border-radius:var(--radius);border:1.5px solid var(--border);padding:14px;text-align:center}
+    .mini-stat-num{font-size:1.3rem;font-weight:700;color:var(--green)}
+    .mini-stat-label{font-size:0.72rem;color:var(--muted);margin-top:2px}
+
+    /* Toast */
+    .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:var(--white);padding:12px 20px;border-radius:8px;font-size:0.88rem;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,0.2);transform:translateY(80px);opacity:0;transition:all .3s;z-index:999}
+    .toast.show{transform:translateY(0);opacity:1}
+
+    @media(max-width:600px){.form-grid{grid-template-columns:1fr}.profile-hero{flex-direction:column;text-align:center}.stats-row{grid-template-columns:repeat(3,1fr)}}
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">🌾 Agri<span>Share</span></a>
+  <a href="dashboard.html" class="nav-back">← Dashboard</a>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- Profile Hero -->
+  <div class="profile-hero">
+    <div class="photo-wrap">
+      <div class="profile-photo" id="profilePhotoEl" onclick="document.getElementById('photoInput').click()">
+        <div class="photo-uploading" id="photoUploading">⏳</div>
+        <span id="photoInitial">?</span>
+      </div>
+      <div class="photo-edit-btn" onclick="document.getElementById('photoInput').click()">✏️</div>
+      <input type="file" id="photoInput" class="photo-input" accept="image/*" onchange="uploadPhoto(event)" />
+    </div>
+    <div class="profile-hero-info">
+      <h2 id="heroName">Loading...</h2>
+      <p id="heroEmail">—</p>
+      <span class="role-pill" id="heroRole">—</span>
+    </div>
+  </div>
+
+  <!-- Mini Stats -->
+  <div class="stats-row">
+    <div class="mini-stat"><div class="mini-stat-num" id="statBookings">—</div><div class="mini-stat-label">Bookings</div></div>
+    <div class="mini-stat"><div class="mini-stat-num" id="statWishlist">—</div><div class="mini-stat-label">Wishlist</div></div>
+    <div class="mini-stat"><div class="mini-stat-num" id="statMember">—</div><div class="mini-stat-label">Days Member</div></div>
+  </div>
+
+  <!-- Alert -->
+  <div class="alert" id="profileAlert"></div>
+
+  <!-- Edit Profile Form -->
+  <div class="form-card">
+    <div class="form-section-header">👤 Edit Profile</div>
+    <div class="form-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="profName" placeholder="Apna naam" />
+        </div>
+        <div class="form-group">
+          <label>Mobile (cannot change)</label>
+          <input type="text" id="profMobile" disabled />
+        </div>
+        <div class="form-group">
+          <label>Email (cannot change)</label>
+          <input type="text" id="profEmail" disabled />
+        </div>
+        <div class="form-group">
+          <label>Role (cannot change)</label>
+          <input type="text" id="profRole" disabled />
+        </div>
+        <div class="form-group">
+          <label>Village / Location</label>
+          <input type="text" id="profLocation" placeholder="e.g. Rampur, Bihar" />
+        </div>
+        <div class="form-group">
+          <label>WhatsApp Number</label>
+          <input type="tel" id="profWhatsapp" placeholder="10 digit number" maxlength="10" />
+        </div>
+        <div class="form-group full">
+          <label>Language Preference</label>
+          <select id="profLang">
+            <option value="en">English</option>
+            <option value="hi">हिंदी</option>
+            <option value="gu">ગુજરાતી</option>
+            <option value="bh">भोजपुरी</option>
+            <option value="bn">বাংলা</option>
+            <option value="mr">मराठी</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:18px">
+        <button class="save-btn" id="saveBtn" onclick="saveProfile()">💾 Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WhatsApp Notifications -->
+  <div class="whatsapp-card">
+    <div class="wa-header">
+      <span style="font-size:1.4rem">📱</span>
+      <div>
+        <h2>WhatsApp Notifications</h2>
+        <div style="font-size:0.75rem;opacity:.85">Booking alerts WhatsApp pe paao</div>
+      </div>
+    </div>
+    <div class="wa-body">
+      <div class="wa-toggle-row">
+        <div>
+          <div class="wa-toggle-label">New Booking Alert</div>
+          <div class="wa-toggle-sub">Jab koi tumhara equipment book kare</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="waBooking" checked /><span class="toggle-slider"></span></label>
+      </div>
+      <div class="wa-toggle-row">
+        <div>
+          <div class="wa-toggle-label">Booking Confirmed</div>
+          <div class="wa-toggle-sub">Jab owner tumhari booking confirm kare</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="waConfirm" checked /><span class="toggle-slider"></span></label>
+      </div>
+      <div class="wa-toggle-row">
+        <div>
+          <div class="wa-toggle-label">Payment Reminder</div>
+          <div class="wa-toggle-sub">Payment pending hone pe reminder</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="waPayment" checked /><span class="toggle-slider"></span></label>
+      </div>
+
+      <!-- Test WhatsApp -->
+      <a class="wa-test-btn" id="waTestBtn" href="#" onclick="sendTestWhatsApp(event)">
+        📱 Send Test WhatsApp Message
+      </a>
+      <div style="font-size:0.72rem;color:var(--muted);margin-top:8px">
+        ⚠️ WhatsApp number profile mein save karna zaroori hai
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Links -->
+  <div class="form-card">
+    <div class="form-section-header">🔗 Quick Links</div>
+    <div class="form-body" style="display:flex;gap:10px;flex-wrap:wrap">
+      <a href="dashboard.html" style="display:flex;align-items:center;gap:6px;background:var(--beige);border:1.5px solid var(--border);border-radius:8px;padding:9px 16px;font-size:0.85rem;font-weight:600;text-decoration:none;color:var(--text);transition:all .2s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">📅 My Bookings</a>
+      <a href="wishlist.html" style="display:flex;align-items:center;gap:6px;background:var(--beige);border:1.5px solid var(--border);border-radius:8px;padding:9px 16px;font-size:0.85rem;font-weight:600;text-decoration:none;color:var(--text);transition:all .2s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">❤️ Wishlist</a>
+      <a href="equipment.html" style="display:flex;align-items:center;gap:6px;background:var(--beige);border:1.5px solid var(--border);border-radius:8px;padding:9px 16px;font-size:0.85rem;font-weight:600;text-decoration:none;color:var(--text);transition:all .2s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">🔍 Browse Equipment</a>
+      <button onclick="logout()" style="display:flex;align-items:center;gap:6px;background:#fee2e2;border:1.5px solid #fca5a5;border-radius:8px;padding:9px 16px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;color:#991b1b;transition:all .2s">🚪 Logout</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API   = 'http://localhost:5000';
+  const token = localStorage.getItem('agriToken');
+  let   user  = JSON.parse(localStorage.getItem('agriShareCurrentUser') || 'null');
+
+  if (!token || !user) { location.href = 'login.html'; }
+
+  /* ── Load profile ── */
+  async function loadProfile() {
+    try {
+      const res  = await fetch(`${API}/api/users/me`, { headers:{ Authorization:`Bearer ${token}` } });
+      const json = await res.json();
+      if (json.success) user = json.user;
+    } catch { /* use localStorage data */ }
+
+    /* Fill hero */
+    const name = user?.full_name || user?.fullName || 'User';
+    document.getElementById('heroName').textContent  = name;
+    document.getElementById('heroEmail').textContent = user?.email || '—';
+    document.getElementById('heroRole').textContent  = user?.role  || 'farmer';
+    document.getElementById('photoInitial').textContent = name[0].toUpperCase();
+
+    /* Photo */
+    if (user?.profile_photo) {
+      const photoEl = document.getElementById('profilePhotoEl');
+      photoEl.innerHTML = `<img src="${API}${user.profile_photo}" alt="Profile" /><div class="photo-uploading" id="photoUploading" style="display:none">⏳</div>`;
+    }
+
+    /* Fill form */
+    document.getElementById('profName').value     = user?.full_name || user?.fullName || '';
+    document.getElementById('profMobile').value   = user?.mobile   || '';
+    document.getElementById('profEmail').value    = user?.email    || '';
+    document.getElementById('profRole').value     = user?.role     || '';
+    document.getElementById('profLocation').value = user?.location || '';
+    document.getElementById('profLang').value     = user?.lang_pref || 'en';
+    document.getElementById('profWhatsapp').value = user?.mobile   || '';
+
+    /* Member days */
+    if (user?.created_at) {
+      const days = Math.floor((Date.now() - new Date(user.created_at)) / (1000*60*60*24));
+      document.getElementById('statMember').textContent = days;
+    }
+
+    /* Load stats */
+    loadStats();
+  }
+
+  async function loadStats() {
+    try {
+      const r1   = await fetch(`${API}/api/bookings/my`, { headers:{ Authorization:`Bearer ${token}` } });
+      const j1   = await r1.json();
+      document.getElementById('statBookings').textContent = (j1.data||[]).length;
+
+      const r2   = await fetch(`${API}/api/wishlist`, { headers:{ Authorization:`Bearer ${token}` } });
+      const j2   = await r2.json();
+      document.getElementById('statWishlist').textContent = (j2.data||[]).length;
+    } catch { /* ignore */ }
+  }
+
+  /* ── Upload photo ── */
+  async function uploadPhoto(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 5*1024*1024) { showToast('❌ Image 5MB se badi hai!', false); return; }
+
+    /* Show uploading */
+    document.getElementById('photoUploading').style.display = 'flex';
+
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    try {
+      const res  = await fetch(`${API}/api/users/photo`, {
+        method: 'POST',
+        headers: { Authorization:`Bearer ${token}` },
+        body: formData
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        const photoEl = document.getElementById('profilePhotoEl');
+        photoEl.innerHTML = `<img src="${API}${json.photo_url}?t=${Date.now()}" alt="Profile"/><div class="photo-uploading" id="photoUploading" style="display:none">⏳</div>`;
+        showToast('✅ Photo updated!');
+        const updated = { ...user, profile_photo: json.photo_url };
+        localStorage.setItem('agriShareCurrentUser', JSON.stringify(updated));
+      } else {
+        showToast('❌ ' + json.message, false);
+        document.getElementById('photoUploading').style.display = 'none';
+      }
+    } catch {
+      showToast('❌ Upload failed. Server chalu hai?', false);
+      document.getElementById('photoUploading').style.display = 'none';
+    }
+  }
+
+  /* ── Save profile ── */
+  async function saveProfile() {
+    const full_name = document.getElementById('profName').value.trim();
+    const location  = document.getElementById('profLocation').value.trim();
+    const lang_pref = document.getElementById('profLang').value;
+    const alertEl   = document.getElementById('profileAlert');
+    const btn       = document.getElementById('saveBtn');
+
+    btn.disabled = true; btn.textContent = 'Saving...';
+
+    try {
+      const res  = await fetch(`${API}/api/users/me`, {
+        method: 'PUT',
+        headers: { Authorization:`Bearer ${token}`, 'Content-Type':'application/json' },
+        body: JSON.stringify({ full_name, location, lang_pref }),
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        const updated = { ...user, full_name, location, lang_pref };
+        localStorage.setItem('agriShareCurrentUser', JSON.stringify(updated));
+        document.getElementById('heroName').textContent = full_name;
+        alertEl.className = 'alert success';
+        alertEl.textContent = '✅ Profile saved successfully!';
+        showToast('✅ Profile updated!');
+      } else {
+        alertEl.className = 'alert error';
+        alertEl.textContent = '⚠️ ' + json.message;
+      }
+    } catch {
+      alertEl.className = 'alert error';
+      alertEl.textContent = '❌ Server error. Server chalu hai?';
+    }
+
+    btn.disabled = false; btn.textContent = '💾 Save Changes';
+  }
+
+  /* ── WhatsApp Test ── */
+  function sendTestWhatsApp(e) {
+    e.preventDefault();
+    const waNum = document.getElementById('profWhatsapp').value.trim();
+    if (!waNum || waNum.length < 10) {
+      showToast('⚠️ Pehle WhatsApp number save karo!', false); return;
+    }
+    const msg = encodeURIComponent(
+      `🌾 *AgriShare Test Notification*\n\n` +
+      `Namaste! Yeh ek test message hai.\n` +
+      `Aapke AgriShare account pe WhatsApp notifications enable hain. ✅\n\n` +
+      `Jab bhi koi booking hogi, aapko yahan message aayega! 🎉`
+    );
+    window.open(`https://wa.me/91${waNum}?text=${msg}`, '_blank');
+  }
+
+  /* ── Logout ── */
+  function logout() {
+    if (!confirm('Logout karna chahte ho?')) return;
+    localStorage.removeItem('agriToken');
+    localStorage.removeItem('agriShareCurrentUser');
+    location.href = 'login.html';
+  }
+
+  function showToast(msg, ok=true) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.background = ok ? 'var(--green)' : 'var(--red)';
+    el.classList.add('show');
+    setTimeout(()=>el.classList.remove('show'), 3000);
+  }
+
+  loadProfile();
+</script>
+
+<script>
+// ── Push Notification Manager ──
+const AGRI_API = 'http://localhost:5000';
+
+async function initPushNotifications() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+  try {
+    // Register service worker
+    const reg = await navigator.serviceWorker.register('/sw.js');
+
+    // Check permission
+    if (Notification.permission === 'denied') return;
+
+    // Ask permission if not granted
+    if (Notification.permission !== 'granted') {
+      // Show custom prompt after 3 seconds
+      setTimeout(() => showNotifPrompt(reg), 3000);
+    }
+  } catch(err) { console.log('SW error:', err); }
+}
+
+function showNotifPrompt(reg) {
+  const token = localStorage.getItem('agriToken');
+  if (!token) return; // Only for logged in users
+
+  // Create prompt UI
+  const prompt = document.createElement('div');
+  prompt.id = 'notifPrompt';
+  prompt.innerHTML = `
+    <div style="position:fixed;bottom:90px;right:24px;background:white;border:1.5px solid #d1d5db;border-radius:12px;padding:14px 16px;max-width:280px;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:9998;font-family:'Poppins',sans-serif;animation:slideUp .3s ease">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:1.2rem">🔔</span>
+        <span style="font-size:0.85rem;font-weight:700;color:#0B3D2E">Notifications Enable Karo?</span>
+        <button onclick="document.getElementById('notifPrompt').remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#6b7280;font-size:1rem">✕</button>
+      </div>
+      <p style="font-size:0.75rem;color:#6b7280;margin-bottom:10px">Booking updates, payment alerts aur offers ke liye!</p>
+      <div style="display:flex;gap:8px">
+        <button onclick="enableNotifications('${reg ? 'yes' : 'no'}')" style="flex:1;background:#0B3D2E;color:white;border:none;border-radius:6px;padding:7px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif">✅ Haan, Enable Karo</button>
+        <button onclick="document.getElementById('notifPrompt').remove()" style="flex:1;background:#f3f4f6;color:#374151;border:none;border-radius:6px;padding:7px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif">Baad Mein</button>
+      </div>
+    </div>
+    <style>@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}</style>
+  `;
+  document.body.appendChild(prompt);
+}
+
+async function enableNotifications() {
+  document.getElementById('notifPrompt')?.remove();
+
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      showToastNotif('❌ Notification permission denied');
+      return;
+    }
+
+    const reg = await navigator.serviceWorker.ready;
+
+    // Subscribe to push
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array('BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjZkFZmkufggkt3rfcA55bEdOPog')
+    });
+
+    // Save to backend
+    const token = localStorage.getItem('agriToken');
+    await fetch(`${AGRI_API}/api/notifications/subscribe`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+      body: JSON.stringify(sub)
+    });
+
+    showToastNotif('🔔 Notifications enabled! Booking updates milenge.');
+
+    // Test notification
+    setTimeout(() => {
+      new Notification('🌾 AgriShare', {
+        body: 'Notifications successfully enable ho gayi! Ab booking updates milenge.',
+        icon: '/favicon.ico'
+      });
+    }, 1000);
+
+  } catch(err) {
+    showToastNotif('Notification setup failed: ' + err.message);
+  }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw     = window.atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+function showToastNotif(msg) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0B3D2E;color:white;padding:10px 20px;border-radius:8px;font-size:0.82rem;font-weight:500;z-index:99999;font-family:Poppins,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.2)';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// Auto init when page loads
+document.addEventListener('DOMContentLoaded', initPushNotifications);
+</script>
+
+<style>
+.chat-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.chat-fab-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0B3D2E 0%, #1e7a52 100%);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 20px rgba(11,61,46,0.4);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  animation: fabPulse 3s infinite;
+}
+
+.chat-fab-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 28px rgba(11,61,46,0.5);
+}
+
+@keyframes fabPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(11,61,46,0.4); }
+  50%       { box-shadow: 0 4px 28px rgba(11,61,46,0.7), 0 0 0 8px rgba(11,61,46,0.1); }
+}
+
+.chat-fab-tooltip {
+  background: #0B3D2E;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-family: 'Poppins', sans-serif;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.chat-fab:hover .chat-fab-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.chat-fab-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  background: #f5a623;
+  border-radius: 50%;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #0B3D2E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  animation: badgeBounce 1s ease infinite;
+}
+
+@keyframes badgeBounce {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.2); }
+}
+</style>
+
+<div class="chat-fab">
+  <div class="chat-fab-tooltip">🌾 Kisan Mitra AI</div>
+  <a href="chatbot.html" class="chat-fab-btn" title="AI Assistant">
+    🌾
+    <span class="chat-fab-badge">AI</span>
+  </a>
+</div>
+</body>
+</html>

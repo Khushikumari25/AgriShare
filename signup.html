@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up — AgriShare</title>
+  <meta name="description" content="Create your free AgriShare account and start sharing farm equipment today." />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>" />
+</head>
+<body>
+
+<div class="auth-page">
+
+  <!-- ============================================
+       LEFT VISUAL PANEL
+       ============================================ -->
+  <div class="auth-visual">
+    <!-- Logo overlay on image -->
+    <a href="index.html" class="auth-visual-logo">
+      <div class="logo-icon">🌾</div>
+      <div>Agri<span style="color:var(--accent);">Share</span></div>
+    </a>
+
+    <!-- Bottom content -->
+    <div class="auth-visual-content">
+      <h2 class="auth-visual-tagline">
+        Join <span class="gold">50,000+</span> Farmers<br />Across Rural India
+      </h2>
+      <p class="auth-visual-text">
+        Share your equipment, earn extra income, and access the tools you need — all powered by AI in your local language.
+      </p>
+      <div class="auth-visual-stats">
+        <div class="auth-stat">
+          <div class="auth-stat-num">12K+</div>
+          <div class="auth-stat-label">Equipment Listed</div>
+        </div>
+        <div class="auth-stat">
+          <div class="auth-stat-num">₹8Cr+</div>
+          <div class="auth-stat-label">Earned by Owners</div>
+        </div>
+        <div class="auth-stat">
+          <div class="auth-stat-num">8</div>
+          <div class="auth-stat-label">Languages Supported</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       RIGHT FORM PANEL
+       ============================================ -->
+  <div class="auth-form-panel">
+
+    <!-- Logo (mobile) -->
+    <a href="index.html" class="logo">
+      <div class="logo-icon">🌾</div>
+      <div class="logo-text">Agri<span>Share</span></div>
+    </a>
+
+    <h1 class="auth-title">Create Account</h1>
+    <p class="auth-sub">Already have an account? <a href="login.html">Login here</a></p>
+
+    <!-- Alert Messages -->
+    <div id="alert-error" class="alert alert-hidden" role="alert"></div>
+    <div id="alert-success" class="alert alert-hidden" role="alert"></div>
+
+    <!-- Signup Form -->
+    <form id="signupForm" novalidate autocomplete="off">
+
+      <!-- Row: Full Name -->
+      <div class="form-group">
+        <label class="form-label" for="fullName">Full Name <span>*</span></label>
+        <input class="form-input" type="text" id="fullName" name="fullName"
+               placeholder="e.g. Ramesh Kumar Yadav" autocomplete="name" />
+        <span class="field-error" id="fullName-err"></span>
+      </div>
+
+      <!-- Row: Mobile + Email -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="mobile">Mobile Number <span>*</span></label>
+          <input class="form-input" type="tel" id="mobile" name="mobile"
+                 placeholder="10-digit number" maxlength="10" autocomplete="tel" />
+          <span class="field-error" id="mobile-err"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="email">Email <span>*</span></label>
+          <input class="form-input" type="email" id="email" name="email"
+                 placeholder="your@email.com" autocomplete="email" />
+          <span class="field-error" id="email-err"></span>
+        </div>
+      </div>
+
+      <!-- Row: Password + Confirm -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="password">Password <span>*</span></label>
+          <div class="input-wrapper">
+            <input class="form-input" type="password" id="password" name="password"
+                   placeholder="Min. 6 characters" autocomplete="new-password" />
+            <button type="button" class="toggle-password" data-target="password" aria-label="Toggle password">👁️</button>
+          </div>
+          <!-- Password Strength Bar -->
+          <div class="strength-bar">
+            <div class="strength-track">
+              <div class="strength-fill" id="strengthFill"></div>
+            </div>
+            <span class="strength-label" id="strengthLabel"></span>
+          </div>
+          <span class="field-error" id="password-err"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="confirmPassword">Confirm Password <span>*</span></label>
+          <div class="input-wrapper">
+            <input class="form-input" type="password" id="confirmPassword" name="confirmPassword"
+                   placeholder="Repeat password" autocomplete="new-password" />
+            <button type="button" class="toggle-password" data-target="confirmPassword" aria-label="Toggle password">👁️</button>
+          </div>
+          <span class="field-error" id="confirmPassword-err"></span>
+        </div>
+      </div>
+
+      <!-- Row: Role + Language -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="role">Your Role <span>*</span></label>
+          <select class="form-select" id="role" name="role">
+            <option value="">— Select Role —</option>
+            <option value="farmer">🌾 Farmer</option>
+            <option value="owner">🚜 Equipment Owner</option>
+            <option value="driver">🚐 Driver</option>
+          </select>
+          <span class="field-error" id="role-err"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="langPref">Language Preference</label>
+          <select class="form-select" id="langPref" name="langPref">
+            <option value="en">English</option>
+            <option value="hi">हिंदी (Hindi)</option>
+            <option value="gu">ગુજરાતી (Gujarati)</option>
+            <option value="bh">भोजपुरी (Bhojpuri)</option>
+            <option value="bn">বাংলা (Bengali)</option>
+            <option value="mr">मराठी (Marathi)</option>
+            <option value="hr">हरियाणवी</option>
+            <option value="uk">गढ़वाली</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="form-group">
+        <label class="form-label" for="location">Village / District <span>*</span></label>
+        <input class="form-input" type="text" id="location" name="location"
+               placeholder="e.g. Rampur, Azamgarh, UP" autocomplete="address-level2" />
+        <span class="field-error" id="location-err"></span>
+      </div>
+
+      <!-- Terms -->
+      <div class="form-group">
+        <div class="checkbox-group">
+          <input type="checkbox" id="terms" name="terms" />
+          <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="submit-btn" id="signupBtn">
+        🌾 Create My Account
+      </button>
+
+    </form>
+
+    <div class="auth-divider">or continue with</div>
+
+    <!-- Language Selector -->
+    <div style="margin-top:12px;">
+      <label style="font-size:0.78rem;color:var(--text-light);display:block;margin-bottom:6px;">Interface Language:</label>
+      <select class="lang-select" style="background:var(--secondary);border:1.5px solid #e0e0e0;color:var(--text-dark);padding:10px 14px;border-radius:8px;font-family:inherit;cursor:pointer;width:auto;">
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

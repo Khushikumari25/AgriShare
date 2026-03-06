@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment — AgriShare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --green:       #0B3D2E;
+      --green-mid:   #145a3c;
+      --green-light: #1e7a52;
+      --accent:      #f5a623;
+      --beige:       #F5F1E8;
+      --beige2:      #ede8da;
+      --text:        #1a1a1a;
+      --muted:       #6b7280;
+      --border:      #d1d5db;
+      --white:       #ffffff;
+      --red:         #e53e3e;
+      --shadow:      0 2px 16px rgba(11,61,46,0.12);
+      --radius:      12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: var(--beige); color: var(--text); min-height: 100vh; }
+
+    /* NAVBAR */
+    .navbar { background: var(--green); padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .nav-logo { color: var(--white); font-size: 1.3rem; font-weight: 700; text-decoration: none; }
+    .nav-logo span { color: var(--accent); }
+    .nav-back { color: rgba(255,255,255,0.8); font-size: 0.88rem; text-decoration: none; }
+    .nav-back:hover { color: var(--white); }
+
+    /* PAGE */
+    .page-wrap { max-width: 960px; margin: 28px auto; padding: 0 16px 48px; display: grid; grid-template-columns: 1fr 380px; gap: 22px; align-items: start; }
+
+    /* ORDER SUMMARY */
+    .summary-card { background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--border); overflow: hidden; position: sticky; top: 20px; }
+    .summary-header { background: var(--green); padding: 16px 20px; color: var(--white); }
+    .summary-header h2 { font-size: 0.95rem; font-weight: 700; margin-bottom: 12px; }
+    .summary-row { display: flex; justify-content: space-between; font-size: 0.83rem; padding: 3px 0; color: rgba(255,255,255,0.85); }
+    .summary-row.total { font-size: 1.1rem; font-weight: 700; color: var(--accent); border-top: 1px solid rgba(255,255,255,0.2); margin-top: 8px; padding-top: 10px; }
+    .summary-body { padding: 16px 20px; }
+    .summary-detail { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 5px 0; border-bottom: 1px solid var(--beige2); }
+    .summary-detail:last-child { border-bottom: none; }
+    .summary-detail span:first-child { color: var(--muted); }
+    .summary-detail span:last-child  { font-weight: 600; }
+
+    .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+    .status-pending   { background: #fef3c7; color: #92400e; }
+    .status-paid      { background: #d1fae5; color: #065f46; }
+
+    /* PAYMENT METHODS */
+    .payment-card { background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--border); overflow: hidden; }
+    .payment-header { padding: 18px 22px; border-bottom: 1.5px solid var(--beige2); }
+    .payment-header h1 { font-size: 1.1rem; font-weight: 700; color: var(--green); }
+    .payment-header p  { font-size: 0.82rem; color: var(--muted); margin-top: 3px; }
+
+    /* METHOD TABS */
+    .method-tabs { display: flex; border-bottom: 1.5px solid var(--border); }
+    .method-tab {
+      flex: 1; padding: 14px 8px; text-align: center; cursor: pointer;
+      font-size: 0.82rem; font-weight: 600; color: var(--muted);
+      border-bottom: 3px solid transparent; transition: all .2s;
+      background: none; border-top: none; border-left: none; border-right: none;
+      font-family: 'Poppins', sans-serif; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .method-tab .tab-icon { font-size: 1.4rem; }
+    .method-tab:hover { color: var(--green); background: var(--beige); }
+    .method-tab.active { color: var(--green); border-bottom-color: var(--green); background: #f0faf4; }
+
+    /* METHOD PANELS */
+    .method-panel { display: none; padding: 24px 22px; }
+    .method-panel.active { display: block; }
+
+    /* ── UPI QR ── */
+    .qr-section { text-align: center; }
+    .qr-wrap {
+      display: inline-block; padding: 16px; background: var(--white);
+      border-radius: 12px; border: 2px solid var(--border);
+      box-shadow: var(--shadow); margin: 16px 0;
+      position: relative;
+    }
+    .qr-wrap img { width: 200px; height: 200px; object-fit: contain; display: block; }
+    .qr-placeholder { width: 200px; height: 200px; background: var(--beige2); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; color: var(--muted); font-size: 0.82rem; }
+    .qr-placeholder .qr-icon { font-size: 3rem; }
+    .upi-id-box { background: var(--beige); border-radius: 8px; padding: 10px 16px; display: inline-flex; align-items: center; gap: 10px; margin-top: 4px; border: 1.5px solid var(--border); }
+    .upi-id-text { font-size: 0.9rem; font-weight: 600; color: var(--green); }
+    .copy-btn { background: var(--green); color: var(--white); border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75rem; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; transition: background .2s; }
+    .copy-btn:hover { background: var(--green-light); }
+    .qr-steps { text-align: left; margin-top: 18px; }
+    .qr-steps h4 { font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+    .qr-step { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; font-size: 0.82rem; color: var(--muted); }
+    .qr-step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--green); color: var(--white); font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+
+    /* Upload QR button */
+    .upload-qr-btn { background: var(--beige2); border: 1.5px dashed var(--border); border-radius: 8px; padding: 10px 20px; font-size: 0.82rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: 'Poppins', sans-serif; margin-top: 8px; transition: all .2s; }
+    .upload-qr-btn:hover { border-color: var(--green); color: var(--green); }
+
+    /* ── CASH ── */
+    .cash-section { }
+    .cash-info-box { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 10px; padding: 16px; margin-bottom: 18px; }
+    .cash-info-box h3 { font-size: 0.88rem; font-weight: 700; color: #92400e; margin-bottom: 8px; }
+    .cash-info-box p  { font-size: 0.82rem; color: #78350f; line-height: 1.6; }
+    .cash-steps { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+    .cash-step { display: flex; gap: 12px; align-items: flex-start; }
+    .cash-step-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--beige2); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .cash-step-text h4 { font-size: 0.85rem; font-weight: 600; }
+    .cash-step-text p  { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .amount-highlight { background: var(--green); color: var(--white); border-radius: 8px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .amount-highlight span:first-child { font-size: 0.85rem; color: rgba(255,255,255,0.8); }
+    .amount-highlight span:last-child  { font-size: 1.4rem; font-weight: 700; color: var(--accent); }
+
+    /* ── PHONEPE / GPAY ── */
+    .upi-apps { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .upi-app-card {
+      border: 1.5px solid var(--border); border-radius: 10px; padding: 16px 10px;
+      text-align: center; cursor: pointer; transition: all .2s; text-decoration: none; color: inherit;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .upi-app-card:hover { border-color: var(--green-light); background: #f0faf4; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .upi-app-icon { font-size: 2.2rem; }
+    .upi-app-name { font-size: 0.78rem; font-weight: 700; }
+    .upi-app-sub  { font-size: 0.68rem; color: var(--muted); }
+
+    .upi-link-box { background: var(--beige); border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; }
+    .upi-link-box label { font-size: 0.78rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .upi-link-row { display: flex; gap: 8px; }
+    .upi-link-row input { flex: 1; border: 1.5px solid var(--border); border-radius: 7px; padding: 8px 12px; font-size: 0.82rem; font-family: 'Poppins', sans-serif; outline: none; background: var(--white); }
+    .upi-link-row button { background: var(--green); color: var(--white); border: none; border-radius: 7px; padding: 8px 14px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; white-space: nowrap; }
+
+    /* ── CONFIRM PAYMENT BUTTON ── */
+    .confirm-section { padding: 16px 22px; background: var(--beige); border-top: 1.5px solid var(--border); }
+    .confirm-btn { width: 100%; background: var(--green); color: var(--white); border: none; border-radius: 10px; padding: 14px; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: 'Poppins', sans-serif; transition: background .2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .confirm-btn:hover:not(:disabled) { background: var(--green-light); }
+    .confirm-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .confirm-note { text-align: center; font-size: 0.72rem; color: var(--muted); margin-top: 8px; }
+
+    /* Alert */
+    .alert { padding: 12px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; margin: 0 22px 16px; display: none; align-items: center; gap: 8px; }
+    .alert.success { background: #d1fae5; color: #065f46; display: flex; }
+    .alert.error   { background: #fee2e2; color: #991b1b; display: flex; }
+
+    /* SUCCESS SCREEN */
+    .success-screen { display: none; text-align: center; padding: 40px 24px; }
+    .success-screen.show { display: block; }
+    .success-icon { font-size: 5rem; margin-bottom: 16px; animation: pop .4s ease; }
+    @keyframes pop { 0%{transform:scale(0)} 80%{transform:scale(1.1)} 100%{transform:scale(1)} }
+    .success-screen h2 { font-size: 1.4rem; font-weight: 700; color: var(--green); margin-bottom: 8px; }
+    .success-screen p  { font-size: 0.88rem; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+    .success-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .success-btn { padding: 10px 22px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; text-decoration: none; cursor: pointer; border: none; font-family: 'Poppins', sans-serif; }
+    .success-btn.primary { background: var(--green); color: var(--white); }
+    .success-btn.outline { background: none; border: 1.5px solid var(--border); color: var(--text); }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--green); color: var(--white); padding: 12px 20px; border-radius: 8px; font-size: 0.88rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); transform: translateY(80px); opacity: 0; transition: all .3s; z-index: 999; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 760px) {
+      .page-wrap { grid-template-columns: 1fr; }
+      .summary-card { position: static; }
+      .upi-apps { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    @media (max-width: 400px) {
+      .upi-apps { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">🌾 Agri<span>Share</span></a>
+  <a href="dashboard.html" class="nav-back">← My Bookings</a>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- LEFT: PAYMENT METHODS -->
+  <div>
+    <div class="payment-card">
+      <div class="payment-header">
+        <h1>💳 Complete Payment</h1>
+        <p>Choose your preferred payment method below</p>
+      </div>
+
+      <!-- TABS -->
+      <div class="method-tabs">
+        <button class="method-tab active" onclick="switchTab('upi', this)">
+          <span class="tab-icon">📱</span> UPI QR
+        </button>
+        <button class="method-tab" onclick="switchTab('cash', this)">
+          <span class="tab-icon">💵</span> Cash
+        </button>
+        <button class="method-tab" onclick="switchTab('apps', this)">
+          <span class="tab-icon">🔗</span> Pay Link
+        </button>
+      </div>
+
+      <!-- ALERT -->
+      <div class="alert" id="payAlert"></div>
+
+      <!-- ══ PANEL 1: UPI QR ══ -->
+      <div class="method-panel active" id="panel-upi">
+        <div class="qr-section">
+          <p style="font-size:0.85rem;color:var(--muted);margin-bottom:4px">Scan QR code with any UPI app</p>
+
+          <div class="qr-wrap">
+            <!-- QR IMAGE: Replace qr-code.png with your actual QR code image -->
+            <img id="qrImage" src="qr-code.png" alt="UPI QR Code"
+                 onerror="this.style.display='none'; document.getElementById('qrFallback').style.display='flex'" />
+            <div id="qrFallback" class="qr-placeholder" style="display:none">
+              <div class="qr-icon">📷</div>
+              <div>Upload your QR code</div>
+              <button class="upload-qr-btn" onclick="document.getElementById('qrUpload').click()">+ Upload QR</button>
+              <input type="file" id="qrUpload" accept="image/*" style="display:none" onchange="uploadQR(event)" />
+            </div>
+          </div>
+
+          <div class="upi-id-box">
+            <!-- Replace with your actual UPI ID -->
+            <span class="upi-id-text" id="upiIdText">your-upi@bank</span>
+            <button class="copy-btn" onclick="copyUPI()">📋 Copy</button>
+          </div>
+
+          <div class="qr-steps">
+            <h4>How to pay:</h4>
+            <div class="qr-step"><div class="qr-step-num">1</div><span>Open PhonePe, GPay, Paytm or any UPI app</span></div>
+            <div class="qr-step"><div class="qr-step-num">2</div><span>Tap "Scan QR" and scan the code above</span></div>
+            <div class="qr-step"><div class="qr-step-num">3</div><span>Enter amount <strong id="upiAmount">₹0</strong> and complete payment</span></div>
+            <div class="qr-step"><div class="qr-step-num">4</div><span>Take a screenshot of confirmation and click "I've Paid" below</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PANEL 2: CASH ══ -->
+      <div class="method-panel" id="panel-cash">
+        <div class="amount-highlight">
+          <span>Total Amount to Pay</span>
+          <span id="cashAmount">₹0</span>
+        </div>
+
+        <div class="cash-info-box">
+          <h3>💡 Cash Payment Process</h3>
+          <p>Pay cash directly to the equipment owner when you meet. Your booking will be confirmed once the owner marks payment as received.</p>
+        </div>
+
+        <div class="cash-steps">
+          <div class="cash-step">
+            <div class="cash-step-icon">📅</div>
+            <div class="cash-step-text">
+              <h4>Booking Confirmed</h4>
+              <p>Owner will confirm your booking request</p>
+            </div>
+          </div>
+          <div class="cash-step">
+            <div class="cash-step-icon">🤝</div>
+            <div class="cash-step-text">
+              <h4>Meet the Owner</h4>
+              <p>Go to the equipment location on your start date</p>
+            </div>
+          </div>
+          <div class="cash-step">
+            <div class="cash-step-icon">💵</div>
+            <div class="cash-step-text">
+              <h4>Pay Cash</h4>
+              <p>Pay <strong id="cashAmount2">₹0</strong> in cash to the owner</p>
+            </div>
+          </div>
+          <div class="cash-step">
+            <div class="cash-step-icon">✅</div>
+            <div class="cash-step-text">
+              <h4>Get Receipt</h4>
+              <p>Owner will mark booking as completed</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PANEL 3: PAY APPS / LINKS ══ -->
+      <div class="method-panel" id="panel-apps">
+        <p style="font-size:0.83rem;color:var(--muted);margin-bottom:14px">Open your payment app and send money directly:</p>
+
+        <div class="upi-apps">
+          <a class="upi-app-card" id="phonepeLinkBtn" href="#" onclick="openApp('phonepe')">
+            <div class="upi-app-icon">💜</div>
+            <div class="upi-app-name">PhonePe</div>
+            <div class="upi-app-sub">Tap to open</div>
+          </a>
+          <a class="upi-app-card" id="gpayLinkBtn" href="#" onclick="openApp('gpay')">
+            <div class="upi-app-icon">🔵</div>
+            <div class="upi-app-name">Google Pay</div>
+            <div class="upi-app-sub">Tap to open</div>
+          </a>
+          <a class="upi-app-card" id="paytmLinkBtn" href="#" onclick="openApp('paytm')">
+            <div class="upi-app-icon">🔷</div>
+            <div class="upi-app-name">Paytm</div>
+            <div class="upi-app-sub">Tap to open</div>
+          </a>
+        </div>
+
+        <div class="upi-link-box">
+          <label>Your UPI Payment Link</label>
+          <div class="upi-link-row">
+            <input type="text" id="upiLinkInput" readonly />
+            <button onclick="copyLink()">📋 Copy Link</button>
+          </div>
+        </div>
+
+        <div class="cash-info-box">
+          <h3>📋 Steps:</h3>
+          <p>1. Tap any app above to open it directly<br>
+             2. Enter amount <strong id="appsAmount">₹0</strong><br>
+             3. Complete the payment<br>
+             4. Click "I've Paid" button below</p>
+        </div>
+      </div>
+
+      <!-- CONFIRM BUTTON -->
+      <div class="confirm-section">
+        <button class="confirm-btn" id="confirmBtn" onclick="confirmPayment()">
+          ✅ I've Paid — Confirm Booking
+        </button>
+        <p class="confirm-note">For cash payments — click after meeting the owner and paying</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT: ORDER SUMMARY -->
+  <div>
+    <div class="summary-card">
+      <div class="summary-header">
+        <h2>📋 Booking Summary</h2>
+        <div class="summary-row"><span>Equipment</span><span id="sumEquip">Loading...</span></div>
+        <div class="summary-row"><span>Duration</span><span id="sumDays">—</span></div>
+        <div class="summary-row total"><span>Total</span><span id="sumTotal">₹0</span></div>
+      </div>
+      <div class="summary-body">
+        <div class="summary-detail"><span>Start Date</span><span id="sumStart">—</span></div>
+        <div class="summary-detail"><span>End Date</span><span id="sumEnd">—</span></div>
+        <div class="summary-detail"><span>Payment Method</span><span id="sumMethod">—</span></div>
+        <div class="summary-detail"><span>Booking ID</span><span id="sumId">—</span></div>
+        <div class="summary-detail"><span>Status</span><span id="sumStatus"><span class="status-pill status-pending">⏳ Pending</span></span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SUCCESS SCREEN (full page overlay) -->
+<div id="successOverlay" style="display:none;position:fixed;inset:0;background:var(--beige);z-index:500;display:none;align-items:center;justify-content:center;padding:20px">
+  <div class="success-screen show" style="max-width:480px;width:100%">
+    <div class="success-icon">🎉</div>
+    <h2>Payment Confirmed!</h2>
+    <p>Your booking has been confirmed successfully.<br>The owner will be notified and will contact you soon.</p>
+    <div style="background:var(--white);border-radius:12px;padding:16px;margin-bottom:20px;border:1.5px solid var(--border);text-align:left">
+      <div style="display:flex;justify-content:space-between;font-size:0.83rem;padding:4px 0;border-bottom:1px solid var(--beige2)"><span style="color:var(--muted)">Booking ID</span><span style="font-weight:700" id="successBookingId">—</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:0.83rem;padding:4px 0;border-bottom:1px solid var(--beige2)"><span style="color:var(--muted)">Equipment</span><span style="font-weight:700" id="successEquip">—</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:0.83rem;padding:4px 0"><span style="color:var(--muted)">Amount</span><span style="font-weight:700;color:var(--green)" id="successAmount">₹0</span></div>
+    </div>
+    <div class="success-btns">
+      <a href="dashboard.html" class="success-btn primary">📅 View My Bookings</a>
+      <a href="equipment.html" class="success-btn outline">Browse More</a>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API   = 'http://localhost:5000';
+  const token = localStorage.getItem('agriToken');
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     ★ OWNER CONFIG — EDIT THESE ★
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  const OWNER_UPI_ID   = 'your-upi@bank';        // ← Apna UPI ID yahan dalo
+  const OWNER_NAME     = 'AgriShare Owner';        // ← Apna naam
+  const QR_IMAGE_PATH  = 'qr-code.png';           // ← Apni QR image file ka naam
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+  /* Get booking data from URL */
+  const params    = new URLSearchParams(window.location.search);
+  const bookingId = params.get('booking_id');
+  const equipTitle= decodeURIComponent(params.get('title')     || '');
+  const startDate = params.get('start_date')  || '—';
+  const endDate   = params.get('end_date')    || '—';
+  const totalDays = params.get('total_days')  || '1';
+  const totalAmt  = parseFloat(params.get('total_amount') || '0');
+  const payMethod = params.get('payment_method') || 'upi';
+
+  /* Populate Summary */
+  document.getElementById('sumEquip').textContent  = equipTitle || 'Equipment';
+  document.getElementById('sumDays').textContent   = `${totalDays} day${totalDays>1?'s':''}`;
+  document.getElementById('sumTotal').textContent  = `₹${totalAmt.toLocaleString('en-IN')}`;
+  document.getElementById('sumStart').textContent  = startDate;
+  document.getElementById('sumEnd').textContent    = endDate;
+  document.getElementById('sumMethod').textContent = payMethod.toUpperCase();
+  document.getElementById('sumId').textContent     = `#${bookingId || '—'}`;
+
+  /* Populate amounts */
+  const amtStr = `₹${totalAmt.toLocaleString('en-IN')}`;
+  document.getElementById('upiAmount').textContent   = amtStr;
+  document.getElementById('cashAmount').textContent  = amtStr;
+  document.getElementById('cashAmount2').textContent = amtStr;
+  document.getElementById('appsAmount').textContent  = amtStr;
+
+  /* Set UPI ID */
+  document.getElementById('upiIdText').textContent = OWNER_UPI_ID;
+
+  /* Build UPI deep links */
+  const upiParams = `pa=${encodeURIComponent(OWNER_UPI_ID)}&pn=${encodeURIComponent(OWNER_NAME)}&am=${totalAmt}&cu=INR&tn=${encodeURIComponent('AgriShare Booking #'+bookingId)}`;
+  const upiIntent = `upi://pay?${upiParams}`;
+  document.getElementById('upiLinkInput').value = upiIntent;
+  document.getElementById('phonepeLinkBtn').href = `phonepe://pay?${upiParams}`;
+  document.getElementById('gpayLinkBtn').href    = `tez://upi/pay?${upiParams}`;
+  document.getElementById('paytmLinkBtn').href   = `paytmmp://pay?${upiParams}`;
+
+  /* Auto switch tab based on payment method chosen */
+  if (payMethod === 'cash')   switchTab('cash', document.querySelectorAll('.method-tab')[1]);
+  if (payMethod === 'wallet') switchTab('apps', document.querySelectorAll('.method-tab')[2]);
+
+  /* ── Tab Switch ── */
+  function switchTab(name, el) {
+    document.querySelectorAll('.method-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.method-panel').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(`panel-${name}`).classList.add('active');
+
+    /* Update confirm button text */
+    const btn = document.getElementById('confirmBtn');
+    if (name === 'cash') {
+      btn.textContent = '💵 Confirm Cash Booking';
+      document.querySelector('.confirm-note').textContent = 'Pay cash to the owner on your start date';
+    } else {
+      btn.textContent = '✅ I\'ve Paid — Confirm Booking';
+      document.querySelector('.confirm-note').textContent = 'Click after completing payment';
+    }
+  }
+
+  /* ── Upload QR (local preview) ── */
+  function uploadQR(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.getElementById('qrImage');
+      img.src = e.target.result;
+      img.style.display = 'block';
+      document.getElementById('qrFallback').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  /* ── Copy UPI ID ── */
+  function copyUPI() {
+    navigator.clipboard.writeText(OWNER_UPI_ID).then(() => showToast('📋 UPI ID copied!'));
+  }
+
+  /* ── Copy UPI Link ── */
+  function copyLink() {
+    const link = document.getElementById('upiLinkInput').value;
+    navigator.clipboard.writeText(link).then(() => showToast('📋 Payment link copied!'));
+  }
+
+  /* ── Open App ── */
+  function openApp(app) {
+    showToast(`Opening ${app}...`);
+  }
+
+  /* ── Confirm Payment ── */
+  async function confirmPayment() {
+    if (!bookingId) { showAlert('error', '❌ Booking ID not found. Please go back and try again.'); return; }
+    if (!token) { location.href = 'login.html'; return; }
+
+    const btn = document.getElementById('confirmBtn');
+    btn.disabled    = true;
+    btn.textContent = 'Confirming...';
+
+    try {
+      const res  = await fetch(`${API}/api/bookings/${bookingId}/status`, {
+        method:  'PATCH',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ status: 'confirmed', payment_status: 'paid' }),
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        /* Show success screen */
+        document.getElementById('successBookingId').textContent = `#${bookingId}`;
+        document.getElementById('successEquip').textContent     = equipTitle;
+        document.getElementById('successAmount').textContent    = amtStr;
+        const overlay = document.getElementById('successOverlay');
+        overlay.style.display = 'flex';
+        document.getElementById('sumStatus').innerHTML = '<span class="status-pill status-paid">✅ Paid</span>';
+      } else {
+        showAlert('error', '⚠️ ' + json.message);
+        btn.disabled    = false;
+        btn.textContent = '✅ I\'ve Paid — Confirm Booking';
+      }
+    } catch {
+      showAlert('error', '❌ Server se connect nahi ho paya. Server chalu hai?');
+      btn.disabled    = false;
+      btn.textContent = '✅ I\'ve Paid — Confirm Booking';
+    }
+  }
+
+  /* ── Helpers ── */
+  function showAlert(type, msg) {
+    const el = document.getElementById('payAlert');
+    el.textContent = msg;
+    el.className   = `alert ${type}`;
+  }
+
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }
+</script>
+
+
+
+<style>
+.chat-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.chat-fab-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0B3D2E 0%, #1e7a52 100%);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 20px rgba(11,61,46,0.4);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  animation: fabPulse 3s infinite;
+}
+
+.chat-fab-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 28px rgba(11,61,46,0.5);
+}
+
+@keyframes fabPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(11,61,46,0.4); }
+  50%       { box-shadow: 0 4px 28px rgba(11,61,46,0.7), 0 0 0 8px rgba(11,61,46,0.1); }
+}
+
+.chat-fab-tooltip {
+  background: #0B3D2E;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-family: 'Poppins', sans-serif;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.chat-fab:hover .chat-fab-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.chat-fab-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  background: #f5a623;
+  border-radius: 50%;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #0B3D2E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  animation: badgeBounce 1s ease infinite;
+}
+
+@keyframes badgeBounce {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.2); }
+}
+</style>
+
+<div class="chat-fab">
+  <div class="chat-fab-tooltip">🌾 Kisan Mitra AI</div>
+  <a href="chatbot.html" class="chat-fab-btn" title="AI Assistant">
+    🌾
+    <span class="chat-fab-badge">AI</span>
+  </a>
+</div>
+</body>
+</html>

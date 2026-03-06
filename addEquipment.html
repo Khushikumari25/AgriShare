@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>List Your Equipment — AgriShare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --green:       #0B3D2E;
+      --green-mid:   #145a3c;
+      --green-light: #1e7a52;
+      --accent:      #f5a623;
+      --beige:       #F5F1E8;
+      --beige2:      #ede8da;
+      --text:        #1a1a1a;
+      --muted:       #6b7280;
+      --border:      #d1d5db;
+      --white:       #ffffff;
+      --red:         #e53e3e;
+      --shadow:      0 2px 12px rgba(11,61,46,0.10);
+      --radius:      10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: var(--beige); color: var(--text); min-height: 100vh; }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      background: var(--green);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .nav-logo { color: var(--white); font-size: 1.3rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .nav-logo span { color: var(--accent); }
+    .nav-back { color: rgba(255,255,255,0.8); font-size: 0.88rem; text-decoration: none; display: flex; align-items: center; gap: 5px; transition: color .2s; }
+    .nav-back:hover { color: var(--white); }
+
+    /* ── PAGE WRAPPER ── */
+    .page-wrap {
+      max-width: 780px;
+      margin: 32px auto;
+      padding: 0 16px 48px;
+    }
+
+    .page-title { font-size: 1.5rem; font-weight: 700; color: var(--green); margin-bottom: 4px; }
+    .page-sub { font-size: 0.88rem; color: var(--muted); margin-bottom: 28px; }
+
+    /* ── PROGRESS STEPS ── */
+    .steps {
+      display: flex;
+      align-items: center;
+      margin-bottom: 28px;
+      gap: 0;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+    .step-num {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: var(--border);
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all .3s;
+    }
+    .step.active .step-num { background: var(--green); color: var(--white); }
+    .step.done .step-num { background: #10b981; color: var(--white); }
+    .step-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
+    .step.active .step-label { color: var(--green); }
+    .step-line { flex: 1; height: 2px; background: var(--border); margin: 0 8px; }
+    .step-line.done { background: #10b981; }
+
+    /* ── FORM CARD ── */
+    .form-card {
+      background: var(--white);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      border: 1.5px solid var(--border);
+      overflow: hidden;
+    }
+
+    .form-section {
+      padding: 24px 28px;
+      border-bottom: 1.5px solid var(--beige2);
+    }
+    .form-section:last-child { border-bottom: none; }
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-row.three  { grid-template-columns: 1fr 1fr 1fr; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+    .form-group label .req { color: var(--red); margin-left: 2px; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.88rem;
+      font-family: 'Poppins', sans-serif;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      background: var(--white);
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--green-light);
+      box-shadow: 0 0 0 3px rgba(30,122,82,0.12);
+    }
+    .form-group input.error,
+    .form-group select.error,
+    .form-group textarea.error { border-color: var(--red); }
+    .form-group textarea { resize: vertical; min-height: 90px; }
+    .field-error { font-size: 0.75rem; color: var(--red); display: none; margin-top: 2px; }
+
+    /* Price input with prefix */
+    .input-with-prefix { position: relative; }
+    .input-with-prefix .prefix {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      font-weight: 700; color: var(--green); font-size: 0.9rem;
+    }
+    .input-with-prefix input { padding-left: 28px; }
+
+    /* ── IMAGE UPLOAD ── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      background: var(--beige);
+    }
+    .upload-zone:hover { border-color: var(--green-light); background: #f0faf4; }
+    .upload-zone .upload-icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .upload-zone p { font-size: 0.85rem; color: var(--muted); }
+    .upload-zone p strong { color: var(--green); }
+    .upload-zone input { display: none; }
+
+    .image-preview { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .preview-item {
+      position: relative;
+      width: 90px; height: 90px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1.5px solid var(--border);
+    }
+    .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+    .preview-item .remove-img {
+      position: absolute; top: 3px; right: 3px;
+      background: rgba(0,0,0,0.6); color: white;
+      border: none; border-radius: 50%;
+      width: 20px; height: 20px;
+      font-size: 0.7rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── CATEGORY CARDS ── */
+    .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .cat-card {
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .cat-card:hover { border-color: var(--green-light); background: #f0faf4; }
+    .cat-card.selected { border-color: var(--green); background: #e8f5ee; }
+    .cat-card .cat-icon { font-size: 1.6rem; margin-bottom: 4px; }
+    .cat-card .cat-name { font-size: 0.78rem; font-weight: 600; color: var(--text); }
+    .cat-card input { display: none; }
+
+    /* ── TOGGLE SWITCH ── */
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+    .toggle-label { font-size: 0.88rem; font-weight: 500; }
+    .toggle-sub { font-size: 0.75rem; color: var(--muted); }
+    .toggle {
+      position: relative;
+      width: 44px; height: 24px;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0;
+      background: var(--border);
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      left: 3px; top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: transform .2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--green); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+    /* ── ALERTS ── */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      margin-bottom: 18px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    .alert.success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+    .alert.error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    /* ── SUBMIT AREA ── */
+    .submit-area {
+      padding: 20px 28px;
+      background: var(--beige);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-top: 1.5px solid var(--border);
+    }
+    .btn-cancel { background: none; border: 1.5px solid var(--border); color: var(--muted); border-radius: 8px; padding: 10px 22px; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; transition: all .2s; }
+    .btn-cancel:hover { border-color: var(--text); color: var(--text); }
+    .btn-submit { background: var(--green); color: var(--white); border: none; border-radius: 8px; padding: 10px 28px; font-size: 0.9rem; font-weight: 700; cursor: pointer; font-family: 'Poppins', sans-serif; transition: background .2s; display: flex; align-items: center; gap: 8px; }
+    .btn-submit:hover { background: var(--green-light); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Tips box */
+    .tips-box { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; }
+    .tips-box h4 { font-size: 0.82rem; font-weight: 700; color: #92400e; margin-bottom: 8px; }
+    .tips-box ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .tips-box li { font-size: 0.8rem; color: #78350f; display: flex; gap: 6px; }
+
+    @media (max-width: 600px) {
+      .form-row        { grid-template-columns: 1fr; }
+      .form-row.three  { grid-template-columns: 1fr 1fr; }
+      .category-grid   { grid-template-columns: repeat(3, 1fr); }
+      .page-wrap       { padding: 0 12px 48px; }
+      .form-section    { padding: 18px 16px; }
+      .submit-area     { padding: 16px; flex-direction: column; }
+      .btn-submit, .btn-cancel { width: 100%; text-align: center; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">🌾 Agri<span>Share</span></a>
+  <a href="equipment.html" class="nav-back">← Back to Browse</a>
+</nav>
+
+<div class="page-wrap">
+
+  <h1 class="page-title">📋 List Your Equipment</h1>
+  <p class="page-sub">Fill in the details below to list your equipment for rent</p>
+
+  <!-- Progress -->
+  <div class="steps">
+    <div class="step active" id="step1">
+      <div class="step-num">1</div>
+      <div class="step-label">Basic Info</div>
+    </div>
+    <div class="step-line" id="line1"></div>
+    <div class="step active" id="step2">
+      <div class="step-num">2</div>
+      <div class="step-label">Pricing</div>
+    </div>
+    <div class="step-line" id="line2"></div>
+    <div class="step active" id="step3">
+      <div class="step-num">3</div>
+      <div class="step-label">Photos</div>
+    </div>
+  </div>
+
+  <!-- Alert -->
+  <div class="alert" id="alertBox"></div>
+
+  <!-- Tips -->
+  <div class="tips-box">
+    <h4>💡 Tips for a great listing:</h4>
+    <ul>
+      <li>✅ Add clear photos — listings with photos get 3x more bookings</li>
+      <li>✅ Set a competitive price — check similar equipment nearby</li>
+      <li>✅ Write a detailed description — mention age, condition, features</li>
+      <li>✅ Keep availability updated to avoid cancellations</li>
+    </ul>
+  </div>
+
+  <form id="addEquipmentForm">
+    <div class="form-card">
+
+      <!-- SECTION 1: Category -->
+      <div class="form-section">
+        <div class="section-title">🚜 Equipment Category <span style="color:var(--red)">*</span></div>
+        <div class="category-grid">
+          <label class="cat-card" onclick="selectCategory('tractor', this)">
+            <input type="radio" name="category" value="tractor" />
+            <div class="cat-icon">🚜</div>
+            <div class="cat-name">Tractor</div>
+          </label>
+          <label class="cat-card" onclick="selectCategory('rotavator', this)">
+            <input type="radio" name="category" value="rotavator" />
+            <div class="cat-icon">⚙️</div>
+            <div class="cat-name">Rotavator</div>
+          </label>
+          <label class="cat-card" onclick="selectCategory('sprayer', this)">
+            <input type="radio" name="category" value="sprayer" />
+            <div class="cat-icon">💧</div>
+            <div class="cat-name">Sprayer</div>
+          </label>
+          <label class="cat-card" onclick="selectCategory('harvester', this)">
+            <input type="radio" name="category" value="harvester" />
+            <div class="cat-icon">🌾</div>
+            <div class="cat-name">Harvester</div>
+          </label>
+          <label class="cat-card" onclick="selectCategory('vehicle', this)">
+            <input type="radio" name="category" value="vehicle" />
+            <div class="cat-icon">🚐</div>
+            <div class="cat-name">Vehicle</div>
+          </label>
+          <label class="cat-card" onclick="selectCategory('other', this)">
+            <input type="radio" name="category" value="other" />
+            <div class="cat-icon">🔧</div>
+            <div class="cat-name">Other</div>
+          </label>
+        </div>
+        <div class="field-error" id="categoryError" style="display:none;margin-top:8px;">Please select a category</div>
+      </div>
+
+      <!-- SECTION 2: Basic Info -->
+      <div class="form-section">
+        <div class="section-title">📝 Basic Information</div>
+        <div class="form-row single" style="margin-bottom:16px">
+          <div class="form-group">
+            <label>Equipment Title <span class="req">*</span></label>
+            <input type="text" id="title" placeholder="e.g. Mahindra 575 DI Tractor — 2019 Model" maxlength="150" />
+            <div class="field-error" id="titleError">Title is required (min 5 characters)</div>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="description" placeholder="Describe your equipment — model, year, condition, features, what it can do..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: Location -->
+      <div class="form-section">
+        <div class="section-title">📍 Location</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Village / Town <span class="req">*</span></label>
+            <input type="text" id="location" placeholder="e.g. Rampur, Muzaffarpur" />
+            <div class="field-error" id="locationError">Location is required</div>
+          </div>
+          <div class="form-group">
+            <label>District / State</label>
+            <input type="text" id="district" placeholder="e.g. Bihar, UP, Gujarat" />
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 4: Pricing -->
+      <div class="form-section">
+        <div class="section-title">💰 Pricing</div>
+        <div class="form-row three">
+          <div class="form-group">
+            <label>Price per Day <span class="req">*</span></label>
+            <div class="input-with-prefix">
+              <span class="prefix">₹</span>
+              <input type="number" id="pricePerDay" placeholder="500" min="1" />
+            </div>
+            <div class="field-error" id="priceError">Valid price required</div>
+          </div>
+          <div class="form-group">
+            <label>Price per Hour (optional)</label>
+            <div class="input-with-prefix">
+              <span class="prefix">₹</span>
+              <input type="number" id="pricePerHour" placeholder="100" min="1" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Minimum Booking</label>
+            <select id="minBooking">
+              <option value="1">1 Day</option>
+              <option value="2">2 Days</option>
+              <option value="3">3 Days</option>
+              <option value="7">1 Week</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 5: Photo -->
+      <div class="form-section">
+        <div class="section-title">📸 Equipment Photo</div>
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('imageFile').click()">
+          <div class="upload-icon">📷</div>
+          <p><strong>Click to upload</strong> or drag & drop</p>
+          <p>JPG, PNG — max 5MB</p>
+          <input type="file" id="imageFile" accept="image/*" onchange="previewImage(event)" />
+        </div>
+        <div class="image-preview" id="imagePreview"></div>
+        <div style="margin-top:12px">
+          <div class="form-group">
+            <label>Or enter image URL</label>
+            <input type="url" id="imageUrl" placeholder="https://example.com/tractor.jpg" />
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 6: Availability -->
+      <div class="form-section">
+        <div class="section-title">⚙️ Settings</div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Available for Booking</div>
+            <div class="toggle-sub">Turn off to temporarily hide this listing</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="isAvailable" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+    </div><!-- end form-card -->
+
+    <!-- SUBMIT -->
+    <div class="submit-area">
+      <button type="button" class="btn-cancel" onclick="history.back()">Cancel</button>
+      <button type="submit" class="btn-submit" id="submitBtn">
+        🌾 List My Equipment
+      </button>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  const API = 'http://localhost:5000';
+
+  /* ── Auth check — only owners can access ── */
+  window.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('agriToken');
+    const user  = JSON.parse(localStorage.getItem('agriShareCurrentUser') || 'null');
+    if (!token || !user) {
+      alert('Please login to list equipment.');
+      location.href = 'login.html';
+      return;
+    }
+    if (user.role !== 'owner') {
+      alert('Only equipment owners can list equipment. Please update your role in profile.');
+      location.href = 'dashboard.html';
+    }
+  });
+
+  /* ── Category select ── */
+  function selectCategory(value, el) {
+    document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('categoryError').style.display = 'none';
+  }
+
+  /* ── Image preview ── */
+  function previewImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert('Image must be less than 5MB'); return; }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const preview = document.getElementById('imagePreview');
+      preview.innerHTML = `
+        <div class="preview-item">
+          <img src="${e.target.result}" alt="preview" />
+          <button class="remove-img" onclick="removeImage()">✕</button>
+        </div>`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeImage() {
+    document.getElementById('imagePreview').innerHTML = '';
+    document.getElementById('imageFile').value = '';
+  }
+
+  /* ── Show alert ── */
+  function showAlert(type, msg) {
+    const el = document.getElementById('alertBox');
+    el.textContent = msg;
+    el.className   = `alert ${type}`;
+    el.style.display = 'flex';
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  /* ── Field helpers ── */
+  function fieldError(id, msg) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'block';
+  }
+  function fieldOk(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  }
+
+  /* ── SUBMIT ── */
+  document.getElementById('addEquipmentForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    let valid = true;
+
+    /* Validate category */
+    const category = document.querySelector('input[name="category"]:checked')?.value;
+    if (!category) { document.getElementById('categoryError').style.display = 'block'; valid = false; }
+
+    /* Validate title */
+    const title = document.getElementById('title').value.trim();
+    if (!title || title.length < 5) { fieldError('titleError'); valid = false; }
+    else fieldOk('titleError');
+
+    /* Validate location */
+    const locationVal = document.getElementById('location').value.trim();
+    const district    = document.getElementById('district').value.trim();
+    const fullLocation = district ? `${locationVal}, ${district}` : locationVal;
+    if (!locationVal) { fieldError('locationError'); valid = false; }
+    else fieldOk('locationError');
+
+    /* Validate price */
+    const pricePerDay = parseFloat(document.getElementById('pricePerDay').value);
+    if (!pricePerDay || pricePerDay < 1) { fieldError('priceError'); valid = false; }
+    else fieldOk('priceError');
+
+    if (!valid) { showAlert('error', '⚠️ Please fix the errors above.'); return; }
+
+    /* Get optional fields */
+    const description  = document.getElementById('description').value.trim();
+    const pricePerHour = parseFloat(document.getElementById('pricePerHour').value) || null;
+    const imageUrl     = document.getElementById('imageUrl').value.trim() || null;
+    const isAvailable  = document.getElementById('isAvailable').checked;
+
+    /* Submit */
+    const btn = document.getElementById('submitBtn');
+    btn.disabled    = true;
+    btn.textContent = 'Listing equipment...';
+
+    try {
+      const token = localStorage.getItem('agriToken');
+      const res   = await fetch(`${API}/api/equipment`, {
+        method:  'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title,
+          category,
+          description: description || undefined,
+          price_per_day:  pricePerDay,
+          price_per_hour: pricePerHour,
+          location:       fullLocation,
+          image_url:      imageUrl,
+          is_available:   isAvailable ? 1 : 0,
+        }),
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        showAlert('success', `✅ Equipment listed successfully! ID: #${json.id}`);
+        btn.textContent = '✅ Listed!';
+        setTimeout(() => location.href = 'equipment.html', 2000);
+      } else {
+        showAlert('error', '⚠️ ' + json.message);
+        btn.disabled    = false;
+        btn.textContent = '🌾 List My Equipment';
+      }
+    } catch (err) {
+      showAlert('error', '❌ Server se connect nahi ho paya. Server chalu hai?');
+      btn.disabled    = false;
+      btn.textContent = '🌾 List My Equipment';
+    }
+  });
+</script>
+</body>
+</html>

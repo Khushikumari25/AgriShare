@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics — AgriShare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --green:#0B3D2E; --green-mid:#145a3c; --green-light:#1e7a52;
+      --accent:#f5a623; --beige:#F5F1E8; --beige2:#ede8da;
+      --text:#1a1a1a; --muted:#6b7280; --border:#d1d5db; --white:#ffffff;
+      --red:#e53e3e; --blue:#3b82f6; --purple:#8b5cf6;
+      --radius:10px; --shadow:0 2px 12px rgba(11,61,46,0.10);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Poppins',sans-serif;background:var(--beige);color:var(--text);min-height:100vh}
+
+    .navbar{background:var(--green);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .nav-logo{color:var(--white);font-size:1.1rem;font-weight:700;text-decoration:none}
+    .nav-logo span{color:var(--accent)}
+    .nav-right{display:flex;gap:8px;align-items:center}
+    .nav-btn{color:rgba(255,255,255,0.8);font-size:0.82rem;text-decoration:none;padding:5px 12px;border-radius:6px}
+    .nav-btn:hover{background:rgba(255,255,255,0.1);color:var(--white)}
+    .live-badge{background:#10b981;color:white;font-size:0.65rem;font-weight:700;padding:3px 8px;border-radius:20px;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+    .main{max-width:1200px;margin:0 auto;padding:20px 16px 48px}
+
+    /* Header */
+    .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+    .page-title{font-size:1.2rem;font-weight:700;color:var(--green)}
+    .page-sub{font-size:0.78rem;color:var(--muted);margin-top:2px}
+    .refresh-btn{background:var(--green);color:white;border:none;border-radius:8px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;display:flex;align-items:center;gap:6px}
+    .refresh-btn:hover{background:var(--green-light)}
+
+    /* Stats Grid */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+    .stat-card{background:var(--white);border-radius:var(--radius);border:1.5px solid var(--border);padding:16px;position:relative;overflow:hidden;transition:transform .2s}
+    .stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+    .stat-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--green)}
+    .stat-card.blue::before{background:var(--blue)}
+    .stat-card.accent::before{background:var(--accent)}
+    .stat-card.purple::before{background:var(--purple)}
+    .stat-card.red::before{background:var(--red)}
+    .stat-icon{font-size:1.8rem;margin-bottom:8px}
+    .stat-num{font-size:1.8rem;font-weight:700;line-height:1;margin-bottom:4px}
+    .stat-label{font-size:0.75rem;color:var(--muted);font-weight:500}
+    .stat-change{font-size:0.72rem;font-weight:600;margin-top:6px}
+    .stat-change.up{color:#10b981}
+    .stat-change.down{color:var(--red)}
+
+    /* Charts Grid */
+    .charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
+    .chart-card{background:var(--white);border-radius:var(--radius);border:1.5px solid var(--border);padding:18px}
+    .chart-title{font-size:0.9rem;font-weight:700;color:var(--green);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+    .chart-sub{font-size:0.72rem;color:var(--muted);font-weight:400}
+    .chart-wrap{position:relative;height:220px}
+
+    /* Full width chart */
+    .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+
+    /* Recent table */
+    .table-card{background:var(--white);border-radius:var(--radius);border:1.5px solid var(--border);padding:18px;margin-bottom:16px}
+    .table-title{font-size:0.9rem;font-weight:700;color:var(--green);margin-bottom:14px}
+    table{width:100%;border-collapse:collapse}
+    th{font-size:0.75rem;font-weight:700;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:2px solid var(--beige2);text-transform:uppercase;letter-spacing:.5px}
+    td{font-size:0.82rem;padding:10px 10px;border-bottom:1px solid var(--beige2)}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:var(--beige)}
+    .status-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:0.7rem;font-weight:700}
+    .status-pending{background:#fef3c7;color:#92400e}
+    .status-confirmed{background:#d1fae5;color:#065f46}
+    .status-completed{background:#dbeafe;color:#1e40af}
+    .status-cancelled{background:#fee2e2;color:#991b1b}
+
+    /* AI Insights */
+    .insights-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+    .insight-card{background:linear-gradient(135deg,var(--green) 0%,var(--green-light) 100%);border-radius:var(--radius);padding:16px;color:white}
+    .insight-card.accent{background:linear-gradient(135deg,#b45309 0%,var(--accent) 100%)}
+    .insight-card.blue{background:linear-gradient(135deg,#1e40af 0%,var(--blue) 100%)}
+    .insight-icon{font-size:1.5rem;margin-bottom:8px}
+    .insight-title{font-size:0.78rem;font-weight:700;margin-bottom:4px;opacity:.85}
+    .insight-value{font-size:1.1rem;font-weight:700;margin-bottom:4px}
+    .insight-desc{font-size:0.72rem;opacity:.75;line-height:1.4}
+
+    /* AI Price Suggestion */
+    .ai-card{background:var(--white);border-radius:var(--radius);border:1.5px solid var(--border);padding:18px;margin-bottom:16px}
+    .ai-title{font-size:0.9rem;font-weight:700;color:var(--green);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .ai-form{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    .ai-select{flex:1;min-width:140px;border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:0.85rem;font-family:'Poppins',sans-serif;outline:none}
+    .ai-select:focus{border-color:var(--green-light)}
+    .ai-btn{background:var(--green);color:white;border:none;border-radius:8px;padding:8px 18px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif}
+    .ai-result{display:none;background:var(--beige);border-radius:8px;padding:14px}
+    .ai-result.show{display:block}
+    .price-suggestion{font-size:1.4rem;font-weight:700;color:var(--green);margin-bottom:6px}
+    .price-range{font-size:0.8rem;color:var(--muted)}
+    .demand-bar{height:8px;background:var(--beige2);border-radius:4px;margin:8px 0;overflow:hidden}
+    .demand-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--accent));transition:width .8s ease}
+
+    /* Crop suggestion */
+    .crop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+    .crop-chip{background:var(--beige);border:1.5px solid var(--border);border-radius:8px;padding:10px;text-align:center;cursor:pointer;transition:all .2s}
+    .crop-chip:hover,.crop-chip.active{background:var(--green);color:white;border-color:var(--green)}
+    .crop-emoji{font-size:1.5rem;display:block;margin-bottom:4px}
+    .crop-name{font-size:0.75rem;font-weight:600}
+    .crop-result{margin-top:12px;display:none}
+    .crop-result.show{display:block}
+    .equip-suggestion{display:flex;align-items:center;gap:10px;padding:10px;background:var(--beige);border-radius:8px;margin-bottom:8px}
+    .equip-sug-icon{font-size:1.4rem}
+    .equip-sug-name{font-size:0.85rem;font-weight:700}
+    .equip-sug-why{font-size:0.72rem;color:var(--muted)}
+    .priority-bar{display:flex;gap:4px;margin-top:4px}
+    .priority-dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+    .priority-dot.empty{background:var(--beige2)}
+
+    @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.charts-grid,.charts-row,.insights-grid{grid-template-columns:1fr}}
+    @media(max-width:500px){.stats-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">🌾 Agri<span>Share</span></a>
+  <div class="nav-right">
+    <span class="live-badge">● LIVE</span>
+    <a href="dashboard.html" class="nav-btn">← Dashboard</a>
+    <a href="admin.html" class="nav-btn">Admin</a>
+  </div>
+</nav>
+
+<div class="main">
+
+  <div class="page-header">
+    <div>
+      <div class="page-title">📊 Analytics Dashboard</div>
+      <div class="page-sub" id="lastUpdated">Loading...</div>
+    </div>
+    <button class="refresh-btn" onclick="loadAll()">🔄 Refresh</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-num" id="statUsers">—</div>
+      <div class="stat-label">Total Users</div>
+      <div class="stat-change up" id="statUsersChange">Loading...</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon">🚜</div>
+      <div class="stat-num" id="statEquip">—</div>
+      <div class="stat-label">Equipment Listed</div>
+      <div class="stat-change up" id="statEquipChange">Loading...</div>
+    </div>
+    <div class="stat-card accent">
+      <div class="stat-icon">📅</div>
+      <div class="stat-num" id="statBookings">—</div>
+      <div class="stat-label">Total Bookings</div>
+      <div class="stat-change up" id="statBookingsChange">Loading...</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-icon">💰</div>
+      <div class="stat-num" id="statRevenue">—</div>
+      <div class="stat-label">Total Revenue</div>
+      <div class="stat-change up" id="statRevenueChange">Loading...</div>
+    </div>
+  </div>
+
+  <!-- AI INSIGHTS -->
+  <div class="insights-grid">
+    <div class="insight-card">
+      <div class="insight-icon">🤖</div>
+      <div class="insight-title">Most Demanded Equipment</div>
+      <div class="insight-value" id="insightTopEquip">Tractor</div>
+      <div class="insight-desc" id="insightTopEquipDesc">Loading demand data...</div>
+    </div>
+    <div class="insight-card accent">
+      <div class="insight-icon">📈</div>
+      <div class="insight-title">Peak Booking Season</div>
+      <div class="insight-value" id="insightSeason">Rabi Season</div>
+      <div class="insight-desc">Oct-Feb mein booking 3x zyada hoti hai</div>
+    </div>
+    <div class="insight-card blue">
+      <div class="insight-icon">💡</div>
+      <div class="insight-title">Revenue Opportunity</div>
+      <div class="insight-value" id="insightOpportunity">₹0</div>
+      <div class="insight-desc" id="insightOpportunityDesc">Pending bookings se possible revenue</div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">
+        📈 Monthly Bookings & Revenue
+        <span class="chart-sub">Last 6 months</span>
+      </div>
+      <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">
+        🥧 Booking Status
+        <span class="chart-sub">Current</span>
+      </div>
+      <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 2 -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">🚜 Equipment by Category<span class="chart-sub">Distribution</span></div>
+      <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">👥 User Roles<span class="chart-sub">Breakdown</span></div>
+      <div class="chart-wrap"><canvas id="rolesChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- AI PRICE SUGGESTION -->
+  <div class="ai-card">
+    <div class="ai-title">🤖 AI Smart Price Suggestion <span style="background:#d1fae5;color:#065f46;font-size:0.65rem;padding:2px 8px;border-radius:20px;font-weight:700">AI Powered</span></div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px">Category aur location select karo — AI batayega optimal rent price!</p>
+    <div class="ai-form">
+      <select class="ai-select" id="priceCategory">
+        <option value="">Category chunno</option>
+        <option value="tractor">🚜 Tractor</option>
+        <option value="rotavator">⚙️ Rotavator</option>
+        <option value="sprayer">💧 Sprayer</option>
+        <option value="harvester">🌾 Harvester</option>
+        <option value="vehicle">🚐 Vehicle</option>
+        <option value="other">🔧 Other</option>
+      </select>
+      <select class="ai-select" id="priceState">
+        <option value="">State chunno</option>
+        <option value="bihar">Bihar</option>
+        <option value="up">Uttar Pradesh</option>
+        <option value="mp">Madhya Pradesh</option>
+        <option value="rajasthan">Rajasthan</option>
+        <option value="maharashtra">Maharashtra</option>
+        <option value="punjab">Punjab</option>
+        <option value="haryana">Haryana</option>
+      </select>
+      <select class="ai-select" id="priceSeason">
+        <option value="kharif">Kharif Season (Jun-Oct)</option>
+        <option value="rabi">Rabi Season (Oct-Feb)</option>
+        <option value="zaid">Zaid Season (Feb-Jun)</option>
+      </select>
+      <button class="ai-btn" onclick="suggestPrice()">💡 Suggest Price</button>
+    </div>
+    <div class="ai-result" id="priceResult">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:4px">Recommended Price/Day</div>
+          <div class="price-suggestion" id="suggestedPrice">₹—</div>
+          <div class="price-range" id="priceRange">Range: ₹— to ₹—</div>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:4px">Market Demand</div>
+          <div id="demandLabel" style="font-size:0.85rem;font-weight:700;color:var(--green)">—</div>
+          <div class="demand-bar"><div class="demand-fill" id="demandFill" style="width:0%"></div></div>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:4px">Season Bonus</div>
+          <div id="seasonBonus" style="font-size:0.85rem;font-weight:700;color:#b45309">—</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:0.78rem;color:var(--muted);background:var(--beige2);padding:10px;border-radius:6px" id="priceAdvice"></div>
+    </div>
+  </div>
+
+  <!-- CROP BASED SUGGESTION -->
+  <div class="ai-card">
+    <div class="ai-title">🌱 Crop-Based Equipment Suggestion <span style="background:#d1fae5;color:#065f46;font-size:0.65rem;padding:2px 8px;border-radius:20px;font-weight:700">AI Powered</span></div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px">Apni fasal chunno — AI batayega kaunsa equipment chahiye aur kab!</p>
+    <div class="crop-grid">
+      <div class="crop-chip" onclick="suggestForCrop('gehun',this)"><span class="crop-emoji">🌾</span><span class="crop-name">Gehun</span></div>
+      <div class="crop-chip" onclick="suggestForCrop('chawal',this)"><span class="crop-emoji">🍚</span><span class="crop-name">Chawal</span></div>
+      <div class="crop-chip" onclick="suggestForCrop('makka',this)"><span class="crop-emoji">🌽</span><span class="crop-name">Makka</span></div>
+      <div class="crop-chip" onclick="suggestForCrop('sarson',this)"><span class="crop-emoji">🌻</span><span class="crop-name">Sarson</span></div>
+      <div class="crop-chip" onclick="suggestForCrop('ganna',this)"><span class="crop-emoji">🎋</span><span class="crop-name">Ganna</span></div>
+      <div class="crop-chip" onclick="suggestForCrop('chana',this)"><span class="crop-emoji">🫘</span><span class="crop-name">Chana</span></div>
+      <div class="crop-chip" onclick="suggestForCrop('arhar',this)"><span class="crop-emoji">🌿</span><span class="crop-name">Arhar</span></div>
+      <div class="crop-chip" onclick="suggestForCrop('aalu',this)"><span class="crop-emoji">🥔</span><span class="crop-name">Aalu</span></div>
+    </div>
+    <div class="crop-result" id="cropResult">
+      <div style="font-size:0.85rem;font-weight:700;color:var(--green);margin-bottom:10px" id="cropTitle"></div>
+      <div id="cropSuggestions"></div>
+    </div>
+  </div>
+
+  <!-- RECENT BOOKINGS TABLE -->
+  <div class="table-card">
+    <div class="table-title">📋 Recent Bookings</div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Booking ID</th>
+            <th>Equipment</th>
+            <th>Renter</th>
+            <th>Dates</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="bookingsTable">
+          <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const API   = 'http://localhost:5000';
+  const token = localStorage.getItem('agriToken');
+
+  // ── Load all data ──
+  async function loadAll() {
+    document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString('en-IN');
+    await Promise.all([loadStats(), loadBookingsTable()]);
+  }
+
+  async function loadStats() {
+    try {
+      const res  = await fetch(`${API}/api/admin/stats`, { headers:{ Authorization:`Bearer ${token}` } });
+      const json = await res.json();
+      if (!json.success) return;
+      const s = json.stats;
+
+      document.getElementById('statUsers').textContent    = s.users;
+      document.getElementById('statEquip').textContent    = s.equipment;
+      document.getElementById('statBookings').textContent = s.bookings;
+      document.getElementById('statRevenue').textContent  = '₹' + (s.revenue/1000).toFixed(1) + 'K';
+
+      document.getElementById('statUsersChange').textContent    = '↑ Active users';
+      document.getElementById('statEquipChange').textContent    = `${s.equipment} listed`;
+      document.getElementById('statBookingsChange').textContent = `${s.pending} pending`;
+      document.getElementById('statRevenueChange').textContent  = `${s.completed} completed`;
+
+      // AI Insights
+      document.getElementById('insightOpportunity').textContent =
+        '₹' + (s.pending * 1500).toLocaleString('en-IN');
+      document.getElementById('insightOpportunityDesc').textContent =
+        `${s.pending} pending bookings × avg ₹1500`;
+
+      // Charts
+      drawMonthlyChart(json.monthly || []);
+      drawStatusChart(s);
+      drawCategoryChart();
+      drawRolesChart(json.roles || []);
+
+    } catch(err) { console.error(err); }
+  }
+
+  async function loadBookingsTable() {
+    try {
+      const res  = await fetch(`${API}/api/admin/bookings`, { headers:{ Authorization:`Bearer ${token}` } });
+      const json = await res.json();
+      const tbody = document.getElementById('bookingsTable');
+      if (!json.data?.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Koi booking nahi mili</td></tr>';
+        return;
+      }
+      tbody.innerHTML = json.data.slice(0,10).map(b => `
+        <tr>
+          <td style="font-weight:700;color:var(--green)">#${b.id}</td>
+          <td>${b.equipment_title||'—'}</td>
+          <td>${b.renter_name||'—'}</td>
+          <td style="font-size:0.78rem">${b.start_date} → ${b.end_date}</td>
+          <td style="font-weight:700">₹${parseFloat(b.total_amount||0).toLocaleString('en-IN')}</td>
+          <td><span class="status-badge status-${b.status}">${b.status}</span></td>
+        </tr>`).join('');
+    } catch { /* ignore */ }
+  }
+
+  // ── Charts ──
+  let charts = {};
+  function destroyChart(id) { if(charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+  function drawMonthlyChart(monthly) {
+    destroyChart('monthly');
+    const labels  = monthly.map(m => m.month) || ['Jan','Feb','Mar','Apr','May','Jun'];
+    const bookings = monthly.map(m => m.bookings) || [0,0,0,0,0,0];
+    const revenue  = monthly.map(m => parseFloat(m.revenue||0)/1000);
+
+    charts['monthly'] = new Chart(document.getElementById('monthlyChart'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Bookings', data: bookings, backgroundColor: '#0B3D2E', borderRadius: 6, yAxisID: 'y' },
+          { label: 'Revenue (₹K)', data: revenue, type: 'line', borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', tension: .4, fill: true, yAxisID: 'y1', pointRadius: 4 }
+        ]
+      },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top',labels:{font:{family:'Poppins',size:11}}}}, scales:{y:{beginAtZero:true,grid:{color:'#f3f4f6'}},y1:{beginAtZero:true,position:'right',grid:{display:false}}} }
+    });
+  }
+
+  function drawStatusChart(s) {
+    destroyChart('status');
+    charts['status'] = new Chart(document.getElementById('statusChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Pending','Confirmed','Completed','Cancelled'],
+        datasets:[{ data:[s.pending,s.confirmed,s.completed,s.cancelled], backgroundColor:['#fbbf24','#34d399','#60a5fa','#f87171'], borderWidth:0, hoverOffset:6 }]
+      },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{family:'Poppins',size:11},padding:12}}} }
+    });
+  }
+
+  function drawCategoryChart() {
+    destroyChart('category');
+    charts['category'] = new Chart(document.getElementById('categoryChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Tractor','Rotavator','Sprayer','Harvester','Vehicle','Other'],
+        datasets:[{ label:'Equipment', data:[45,25,15,8,5,2], backgroundColor:['#0B3D2E','#145a3c','#1e7a52','#2d9e6e','#3cb88a','#52d9a7'], borderRadius:6 }]
+      },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:'#f3f4f6'}},x:{grid:{display:false}}} }
+    });
+  }
+
+  function drawRolesChart(roles) {
+    destroyChart('roles');
+    const labels = roles.map(r=>r.role) || ['farmer','owner','driver'];
+    const data   = roles.map(r=>r.count) || [0,0,0];
+    charts['roles'] = new Chart(document.getElementById('rolesChart'), {
+      type: 'pie',
+      data:{ labels, datasets:[{ data, backgroundColor:['#0B3D2E','#f5a623','#3b82f6'], borderWidth:0, hoverOffset:6 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{family:'Poppins',size:11},padding:12}}} }
+    });
+  }
+
+  // ── AI Price Suggestion ──
+  const priceData = {
+    tractor:   { base:1500, bihar:1400, up:1500, mp:1300, rajasthan:1600, maharashtra:1800, punjab:2000, haryana:1900 },
+    rotavator: { base:800,  bihar:750,  up:800,  mp:700,  rajasthan:850,  maharashtra:900,  punjab:950,  haryana:900  },
+    sprayer:   { base:400,  bihar:350,  up:400,  mp:350,  rajasthan:450,  maharashtra:500,  punjab:500,  haryana:480  },
+    harvester: { base:2500, bihar:2200, up:2500, mp:2300, rajasthan:2800, maharashtra:3000, punjab:3500, haryana:3200 },
+    vehicle:   { base:1200, bihar:1000, up:1200, mp:1100, rajasthan:1300, maharashtra:1500, punjab:1400, haryana:1300 },
+    other:     { base:600,  bihar:550,  up:600,  mp:550,  rajasthan:650,  maharashtra:700,  punjab:750,  haryana:700  },
+  };
+  const seasonMultiplier = { kharif:1.15, rabi:1.3, zaid:0.9 };
+  const demandMap = { tractor:85, rotavator:70, sprayer:60, harvester:90, vehicle:50, other:40 };
+
+  function suggestPrice() {
+    const cat    = document.getElementById('priceCategory').value;
+    const state  = document.getElementById('priceState').value;
+    const season = document.getElementById('priceSeason').value;
+    if (!cat || !state) { alert('Category aur State dono chunno!'); return; }
+
+    const base   = priceData[cat]?.[state] || priceData[cat]?.base || 1000;
+    const mult   = seasonMultiplier[season] || 1;
+    const price  = Math.round(base * mult);
+    const min    = Math.round(price * 0.85);
+    const max    = Math.round(price * 1.2);
+    const demand = demandMap[cat] || 50;
+    const bonus  = Math.round((mult - 1) * 100);
+
+    document.getElementById('suggestedPrice').textContent = '₹' + price.toLocaleString('en-IN');
+    document.getElementById('priceRange').textContent     = `Range: ₹${min.toLocaleString('en-IN')} to ₹${max.toLocaleString('en-IN')}`;
+    document.getElementById('demandLabel').textContent    = demand >= 80 ? '🔥 Very High' : demand >= 60 ? '📈 High' : demand >= 40 ? '➡️ Medium' : '📉 Low';
+    document.getElementById('demandFill').style.width     = demand + '%';
+    document.getElementById('seasonBonus').textContent    = bonus > 0 ? `+${bonus}% season premium` : bonus < 0 ? `${bonus}% off-season discount` : 'Normal season';
+    document.getElementById('priceAdvice').textContent    = `💡 ${state.toUpperCase()} mein ${cat} ki ${season} season mein ₹${price}/day optimal price hai. Zyada bookings ke liye ₹${min} se shuru karo aur demand badhne pe ₹${max} tak le sakte ho.`;
+
+    document.getElementById('priceResult').classList.add('show');
+  }
+
+  // ── Crop Based Suggestion ──
+  const cropData = {
+    gehun:   { season:'Rabi (Oct-Mar)', steps:[{icon:'🚜',name:'Tractor',why:'Khet jotne ke liye',priority:5},{icon:'⚙️',name:'Rotavator',why:'Mitti bhurbhuri banane ke liye',priority:5},{icon:'🌾',name:'Harvester',why:'Katai ke waqt zaroori',priority:4},{icon:'💧',name:'Sprayer',why:'Fertilizer/pesticide spray',priority:3}] },
+    chawal:  { season:'Kharif (Jun-Oct)', steps:[{icon:'🚜',name:'Tractor',why:'Puddling aur field prep',priority:5},{icon:'💧',name:'Sprayer',why:'Pesticide aur weedicide',priority:4},{icon:'🌾',name:'Harvester',why:'Combine harvesting',priority:5},{icon:'⚙️',name:'Rotavator',why:'Stubble management',priority:3}] },
+    makka:   { season:'Kharif (Jun-Sep)', steps:[{icon:'🚜',name:'Tractor',why:'Deep ploughing zaroori',priority:5},{icon:'⚙️',name:'Rotavator',why:'Seedbed preparation',priority:4},{icon:'💧',name:'Sprayer',why:'Pest control',priority:4},{icon:'🌾',name:'Harvester',why:'Maize harvesting',priority:3}] },
+    sarson:  { season:'Rabi (Oct-Feb)', steps:[{icon:'🚜',name:'Tractor',why:'Field preparation',priority:5},{icon:'💧',name:'Sprayer',why:'Aphid control important',priority:5},{icon:'⚙️',name:'Rotavator',why:'Seedbed ready karna',priority:4}] },
+    ganna:   { season:'Year round', steps:[{icon:'🚜',name:'Tractor',why:'Deep furrow making',priority:5},{icon:'💧',name:'Sprayer',why:'Fertilizer application',priority:4},{icon:'🚐',name:'Vehicle',why:'Transport to mill',priority:5}] },
+    chana:   { season:'Rabi (Oct-Feb)', steps:[{icon:'🚜',name:'Tractor',why:'Light soil preparation',priority:4},{icon:'💧',name:'Sprayer',why:'Wilt disease control',priority:5},{icon:'🌾',name:'Harvester',why:'Mechanical harvesting',priority:3}] },
+    arhar:   { season:'Kharif (Jun-Nov)', steps:[{icon:'🚜',name:'Tractor',why:'Field preparation',priority:4},{icon:'💧',name:'Sprayer',why:'Pod borer control',priority:5},{icon:'🌾',name:'Harvester',why:'Threshing machine',priority:3}] },
+    aalu:    { season:'Rabi (Oct-Jan)', steps:[{icon:'🚜',name:'Tractor',why:'Deep ploughing must',priority:5},{icon:'⚙️',name:'Rotavator',why:'Fine tilth preparation',priority:5},{icon:'💧',name:'Sprayer',why:'Blight control',priority:5}] },
+  };
+
+  function suggestForCrop(crop, el) {
+    document.querySelectorAll('.crop-chip').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+
+    const data = cropData[crop];
+    if (!data) return;
+
+    document.getElementById('cropTitle').textContent = `${el.querySelector('.crop-emoji').textContent} ${el.querySelector('.crop-name').textContent} ke liye zaroori equipment — ${data.season}`;
+    document.getElementById('cropSuggestions').innerHTML = data.steps.map(s => `
+      <div class="equip-suggestion">
+        <div class="equip-sug-icon">${s.icon}</div>
+        <div style="flex:1">
+          <div class="equip-sug-name">${s.name}</div>
+          <div class="equip-sug-why">${s.why}</div>
+          <div class="priority-bar">${Array(5).fill(0).map((_,i)=>`<div class="priority-dot ${i<s.priority?'':'empty'}"></div>`).join('')}</div>
+        </div>
+        <a href="equipment.html?category=${s.name.toLowerCase()}" style="background:var(--green);color:white;font-size:0.72rem;font-weight:700;padding:5px 10px;border-radius:6px;text-decoration:none;white-space:nowrap">Book Now</a>
+      </div>`).join('');
+
+    document.getElementById('cropResult').classList.add('show');
+  }
+
+  loadAll();
+  // Auto refresh every 60 seconds
+  setInterval(loadAll, 60000);
+</script>
+
+</body>
+</html>

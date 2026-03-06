@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browse Equipment — AgriShare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --green:       #0B3D2E;
+      --green-mid:   #145a3c;
+      --green-light: #1e7a52;
+      --accent:      #f5a623;
+      --beige:       #F5F1E8;
+      --beige2:      #ede8da;
+      --text:        #1a1a1a;
+      --muted:       #6b7280;
+      --border:      #d1d5db;
+      --white:       #ffffff;
+      --red:         #e53e3e;
+      --shadow:      0 2px 12px rgba(11,61,46,0.10);
+      --radius:      10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: var(--beige); color: var(--text); min-height: 100vh; }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      background: var(--green);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .nav-logo { color: var(--white); font-size: 1.3rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .nav-logo span { color: var(--accent); }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-btn { background: var(--accent); color: var(--green); border: none; padding: 7px 18px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; text-decoration: none; transition: opacity .2s; }
+    .nav-btn:hover { opacity: 0.88; }
+    .nav-btn.outline { background: transparent; border: 1.5px solid rgba(255,255,255,0.5); color: var(--white); }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      background: linear-gradient(135deg, var(--green) 0%, var(--green-mid) 100%);
+      padding: 28px 24px 0;
+      color: var(--white);
+    }
+    .page-header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+    .page-header p  { font-size: 0.88rem; color: rgba(255,255,255,0.75); margin-bottom: 20px; }
+
+    /* Search bar */
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      background: var(--white);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+    }
+    .search-bar input {
+      flex: 1;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      padding: 9px 14px;
+      font-size: 0.9rem;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .search-bar input:focus { border-color: var(--green-light); }
+    .search-bar button {
+      background: var(--green);
+      color: var(--white);
+      border: none;
+      border-radius: 7px;
+      padding: 9px 22px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background .2s;
+    }
+    .search-bar button:hover { background: var(--green-light); }
+
+    /* ── MAIN LAYOUT ── */
+    .main { display: flex; gap: 0; min-height: calc(100vh - 180px); }
+
+    /* ── SIDEBAR FILTERS ── */
+    .sidebar {
+      width: 260px;
+      min-width: 260px;
+      background: var(--white);
+      border-right: 1.5px solid var(--border);
+      padding: 20px 16px;
+      position: sticky;
+      top: 60px;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+    }
+    .sidebar-title { font-size: 0.78rem; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .clear-btn { font-size: 0.78rem; color: var(--green-light); cursor: pointer; font-weight: 600; background: none; border: none; }
+    .filter-section { margin-bottom: 22px; border-bottom: 1px solid var(--beige2); padding-bottom: 18px; }
+    .filter-section:last-child { border-bottom: none; }
+    .filter-label { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 10px; display: block; }
+    .filter-options { display: flex; flex-direction: column; gap: 8px; }
+    .filter-option { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .filter-option input[type="radio"],
+    .filter-option input[type="checkbox"] { accent-color: var(--green); width: 15px; height: 15px; cursor: pointer; }
+    .filter-option label { font-size: 0.85rem; color: var(--text); cursor: pointer; display: flex; justify-content: space-between; width: 100%; }
+    .filter-count { color: var(--muted); font-size: 0.78rem; }
+
+    /* Price range */
+    .price-inputs { display: flex; gap: 8px; align-items: center; }
+    .price-inputs input { flex: 1; border: 1.5px solid var(--border); border-radius: 6px; padding: 7px 10px; font-size: 0.82rem; font-family: 'Poppins', sans-serif; outline: none; }
+    .price-inputs input:focus { border-color: var(--green-light); }
+    .price-inputs span { color: var(--muted); font-size: 0.82rem; }
+
+    .apply-filter-btn {
+      width: 100%;
+      background: var(--green);
+      color: var(--white);
+      border: none;
+      border-radius: 7px;
+      padding: 10px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: background .2s;
+    }
+    .apply-filter-btn:hover { background: var(--green-light); }
+
+    /* ── RESULTS AREA ── */
+    .results { flex: 1; padding: 20px; }
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .results-count { font-size: 0.88rem; color: var(--muted); }
+    .results-count strong { color: var(--text); }
+    .sort-select {
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    /* ── EQUIPMENT LIST CARD (Flipkart style) ── */
+    .equipment-list { display: flex; flex-direction: column; gap: 16px; }
+
+    .equip-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      display: flex;
+      gap: 0;
+      overflow: hidden;
+      transition: box-shadow .2s, border-color .2s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+    .equip-card:hover { box-shadow: 0 4px 20px rgba(11,61,46,0.13); border-color: var(--green-light); }
+
+    .equip-img {
+      width: 200px;
+      min-width: 200px;
+      height: 160px;
+      object-fit: cover;
+      background: var(--beige2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      flex-shrink: 0;
+    }
+    .equip-img img { width: 100%; height: 100%; object-fit: cover; }
+
+    .equip-body { flex: 1; padding: 16px 18px; display: flex; flex-direction: column; justify-content: space-between; }
+    .equip-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+
+    .equip-info h3 { font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .equip-category {
+      display: inline-block;
+      background: #e8f5ee;
+      color: var(--green-mid);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .equip-desc { font-size: 0.83rem; color: var(--muted); line-height: 1.5; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+    .equip-price-box { text-align: right; flex-shrink: 0; }
+    .equip-price { font-size: 1.2rem; font-weight: 700; color: var(--green); }
+    .equip-price span { font-size: 0.75rem; font-weight: 400; color: var(--muted); }
+    .equip-price-hour { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+    .equip-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--beige2); }
+
+    .equip-meta { display: flex; gap: 16px; }
+    .equip-meta-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; color: var(--muted); }
+    .equip-meta-item svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    .equip-rating { display: flex; align-items: center; gap: 4px; }
+    .stars { color: var(--accent); font-size: 0.82rem; }
+    .rating-count { font-size: 0.78rem; color: var(--muted); }
+
+    .equip-actions { display: flex; gap: 8px; }
+    .btn-book {
+      background: var(--green);
+      color: var(--white);
+      border: none;
+      border-radius: 6px;
+      padding: 8px 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-book:hover { background: var(--green-light); }
+    .btn-view {
+      background: var(--white);
+      color: var(--green);
+      border: 1.5px solid var(--green);
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-view:hover { background: var(--green); color: var(--white); }
+
+    .avail-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .avail-badge.available { background: #d1fae5; color: #065f46; }
+    .avail-badge.unavailable { background: #fee2e2; color: #991b1b; }
+
+    /* ── LOADING SKELETON ── */
+    .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    .skeleton-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      display: flex;
+      overflow: hidden;
+      height: 160px;
+    }
+    .skeleton-img  { width: 200px; height: 100%; }
+    .skeleton-body { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .skeleton-line { height: 14px; }
+    .skeleton-line.short { width: 40%; }
+    .skeleton-line.medium { width: 65%; }
+    .skeleton-line.long { width: 90%; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-state .empty-icon { font-size: 4rem; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 1.1rem; color: var(--text); margin-bottom: 8px; }
+    .empty-state p { font-size: 0.88rem; }
+
+    /* ── PAGINATION ── */
+    .pagination { display: flex; justify-content: center; gap: 6px; margin-top: 28px; }
+    .page-btn {
+      width: 36px; height: 36px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      background: var(--white);
+      color: var(--text);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .page-btn:hover, .page-btn.active { background: var(--green); color: var(--white); border-color: var(--green); }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── TOAST ── */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--green); color: var(--white); padding: 12px 20px; border-radius: 8px; font-size: 0.88rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); transform: translateY(80px); opacity: 0; transition: all .3s; z-index: 999; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .sidebar.open { display: block; position: fixed; top: 60px; left: 0; width: 280px; height: calc(100vh - 60px); z-index: 200; box-shadow: 4px 0 20px rgba(0,0,0,0.15); }
+      .equip-img { width: 130px; min-width: 130px; height: 130px; }
+      .equip-price { font-size: 1rem; }
+      .filter-toggle-btn { display: flex; }
+      .results { padding: 12px; }
+    }
+    .filter-toggle-btn {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 150; }
+    .overlay.show { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">🌾 Agri<span>Share</span></a>
+  <div class="nav-right">
+    <a href="add-equipment.html" class="nav-btn">+ List Equipment</a>
+    <a href="dashboard.html" class="nav-btn outline">Dashboard</a>
+  </div>
+</nav>
+
+<!-- PAGE HEADER + SEARCH -->
+<div class="page-header">
+  <h1>🚜 Browse Farm Equipment</h1>
+  <p>Find tractors, sprayers, harvesters & more near your village</p>
+  <div class="search-bar">
+    <button class="filter-toggle-btn" onclick="toggleSidebar()">⚙️ Filters</button>
+    <div style="position:relative;flex:1;display:flex;align-items:center">
+      <input type="text" id="searchInput" placeholder="🔍 Search equipment... ya 🎤 voice use karo" style="width:100%;padding-right:40px" />
+      <button id="voiceSearchBtn" onclick="startVoiceSearch()" title="Hindi ya English mein bolo" style="position:absolute;right:8px;background:none;border:none;font-size:1.2rem;cursor:pointer;padding:0;line-height:1">🎤</button>
+    </div>
+    <input type="text" id="locationInput" placeholder="📍 Village / District" style="max-width:180px" />
+    <button onclick="loadEquipment()">🔍 Search</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-title">
+      Filters
+      <button class="clear-btn" onclick="clearFilters()">Clear All</button>
+    </div>
+
+    <!-- Category -->
+    <div class="filter-section">
+      <span class="filter-label">Category</span>
+      <div class="filter-options" id="categoryFilters">
+        <label class="filter-option"><input type="radio" name="category" value="" checked /><label>All Categories</label></label>
+        <label class="filter-option"><input type="radio" name="category" value="tractor" /><label>🚜 Tractor <span class="filter-count"></span></label></label>
+        <label class="filter-option"><input type="radio" name="category" value="rotavator" /><label>⚙️ Rotavator</label></label>
+        <label class="filter-option"><input type="radio" name="category" value="sprayer" /><label>💧 Sprayer</label></label>
+        <label class="filter-option"><input type="radio" name="category" value="harvester" /><label>🌾 Harvester</label></label>
+        <label class="filter-option"><input type="radio" name="category" value="vehicle" /><label>🚐 Vehicle</label></label>
+        <label class="filter-option"><input type="radio" name="category" value="other" /><label>🔧 Other</label></label>
+      </div>
+    </div>
+
+    <!-- Price Range -->
+    <div class="filter-section">
+      <span class="filter-label">Price per Day (₹)</span>
+      <div class="price-inputs">
+        <input type="number" id="minPrice" placeholder="Min" min="0" />
+        <span>—</span>
+        <input type="number" id="maxPrice" placeholder="Max" min="0" />
+      </div>
+    </div>
+
+    <!-- Availability -->
+    <div class="filter-section">
+      <span class="filter-label">Availability</span>
+      <div class="filter-options">
+        <label class="filter-option"><input type="radio" name="available" value="1" checked /><label>Available Now</label></label>
+        <label class="filter-option"><input type="radio" name="available" value="" /><label>Show All</label></label>
+      </div>
+    </div>
+
+    <!-- Date -->
+    <div class="filter-section">
+      <span class="filter-label">Available From</span>
+      <input type="date" id="dateFilter" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:8px 10px;font-size:0.85rem;font-family:'Poppins',sans-serif;outline:none;" />
+    </div>
+
+    <button class="apply-filter-btn" onclick="loadEquipment()">Apply Filters</button>
+  </aside>
+
+  <!-- RESULTS -->
+  <div class="results">
+    <div class="results-header">
+      <p class="results-count" id="resultsCount">Loading equipment...</p>
+      <select class="sort-select" id="sortSelect" onchange="loadEquipment()">
+        <option value="newest">Newest First</option>
+        <option value="price_low">Price: Low to High</option>
+        <option value="price_high">Price: High to Low</option>
+        <option value="rating">Top Rated</option>
+      </select>
+    </div>
+
+    <div class="equipment-list" id="equipmentList">
+      <!-- Skeleton loaders -->
+      ${[1,2,3].map(() => `
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-img"></div>
+        <div class="skeleton-body">
+          <div class="skeleton skeleton-line short"></div>
+          <div class="skeleton skeleton-line medium"></div>
+          <div class="skeleton skeleton-line long"></div>
+          <div class="skeleton skeleton-line short"></div>
+        </div>
+      </div>`).join('')}
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = 'http://localhost:5000';
+  let currentPage = 1;
+  const LIMIT = 10;
+
+  /* ── Category emoji map ── */
+  const catEmoji = { tractor:'🚜', rotavator:'⚙️', sprayer:'💧', harvester:'🌾', vehicle:'🚐', other:'🔧' };
+
+  /* ── Load Equipment from API ── */
+  async function loadEquipment(page = 1) {
+    currentPage = page;
+    const list = document.getElementById('equipmentList');
+    list.innerHTML = skeletons(4);
+
+    const category  = document.querySelector('input[name="category"]:checked')?.value || '';
+    const available = document.querySelector('input[name="available"]:checked')?.value ?? '1';
+    const location  = document.getElementById('locationInput').value.trim();
+    const search    = document.getElementById('searchInput').value.trim();
+    const minPrice  = document.getElementById('minPrice').value;
+    const maxPrice  = document.getElementById('maxPrice').value;
+
+    const params = new URLSearchParams({
+      page, limit: LIMIT,
+      ...(category  && { category }),
+      ...(available !== '' && { available }),
+      ...(location  && { location }),
+    });
+
+    try {
+      const res  = await fetch(`${API}/api/equipment?${params}`);
+      const json = await res.json();
+
+      if (!json.success) throw new Error(json.message);
+
+      let items = json.data || [];
+
+      /* Client-side search filter */
+      if (search) {
+        items = items.filter(e =>
+          e.title.toLowerCase().includes(search.toLowerCase()) ||
+          e.category.toLowerCase().includes(search.toLowerCase())
+        );
+      }
+      /* Client-side price filter */
+      if (minPrice) items = items.filter(e => parseFloat(e.price_per_day) >= parseFloat(minPrice));
+      if (maxPrice) items = items.filter(e => parseFloat(e.price_per_day) <= parseFloat(maxPrice));
+
+      /* Sort */
+      const sort = document.getElementById('sortSelect').value;
+      if (sort === 'price_low')  items.sort((a,b) => a.price_per_day - b.price_per_day);
+      if (sort === 'price_high') items.sort((a,b) => b.price_per_day - a.price_per_day);
+      if (sort === 'rating')     items.sort((a,b) => (b.avg_rating||0) - (a.avg_rating||0));
+
+      document.getElementById('resultsCount').innerHTML =
+        `Showing <strong>${items.length}</strong> equipment${location ? ` near <strong>${location}</strong>` : ''}`;
+
+      list.innerHTML = items.length ? items.map(renderCard).join('') : emptyState();
+      renderPagination(json.count);
+
+    } catch (err) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Could not load equipment</h3><p>${err.message}</p></div>`;
+      document.getElementById('resultsCount').textContent = 'Error loading data';
+    }
+  }
+
+  /* ── Render one card ── */
+  function renderCard(e) {
+    const stars = '★'.repeat(Math.round(e.avg_rating||0)) + '☆'.repeat(5 - Math.round(e.avg_rating||0));
+    return `
+    <div class="equip-card" onclick="location.href='equipment-detail.html?id=${e.id}'">
+      <div class="equip-img">
+        ${e.image_url
+          ? `<img src="${e.image_url}" alt="${e.title}" loading="lazy" />`
+          : `<span>${catEmoji[e.category] || '🔧'}</span>`}
+      </div>
+      <div class="equip-body">
+        <div class="equip-top">
+          <div class="equip-info">
+            <span class="equip-category">${e.category}</span>
+            <h3>${e.title}</h3>
+            <p class="equip-desc">${e.description || 'No description provided.'}</p>
+          </div>
+          <div class="equip-price-box">
+            <div class="equip-price">₹${parseFloat(e.price_per_day).toLocaleString('en-IN')} <span>/ day</span></div>
+            ${e.price_per_hour ? `<div class="equip-price-hour">₹${parseFloat(e.price_per_hour).toLocaleString('en-IN')} / hour</div>` : ''}
+          </div>
+        </div>
+        <div class="equip-bottom">
+          <div class="equip-meta">
+            <div class="equip-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>
+              ${e.location}
+            </div>
+            <div class="equip-meta-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              ${e.owner_name || 'Owner'}
+            </div>
+            <div class="equip-rating">
+              <span class="stars">${stars}</span>
+              <span class="rating-count">(${e.review_count || 0})</span>
+            </div>
+          </div>
+          <div class="equip-actions">
+            <button class="btn-view" style="background:none;border:1.5px solid var(--border);color:var(--muted);padding:8px 10px;font-size:1rem" data-wished="0" title="Add to wishlist" onclick="event.stopPropagation(); toggleWishlist(${e.id}, this)">🤍</button>
+            <span class="avail-badge ${e.is_available ? 'available' : 'unavailable'}">
+              ${e.is_available ? '✅ Available' : '❌ Booked'}
+            </span>
+            ${e.is_available ? `<button class="btn-book" onclick="event.stopPropagation(); bookNow(${e.id}, '${e.title}')">Book Now</button>` : ''}
+            <button class="btn-view" onclick="event.stopPropagation(); location.href='equipment-detail.html?id=${e.id}'">View</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  /* ── Wishlist Toggle ── */
+  async function toggleWishlist(id, btn) {
+    const token = localStorage.getItem('agriToken');
+    if (!token) { showToast('⚠️ Login karke wishlist use karo'); return; }
+    const isWished = btn.dataset.wished === '1';
+    try {
+      const res  = await fetch(`${API}/api/wishlist/${id}`, {
+        method: isWished ? 'DELETE' : 'POST',
+        headers: { Authorization:`Bearer ${token}` }
+      });
+      const json = await res.json();
+      if (json.success) {
+        btn.dataset.wished = isWished ? '0' : '1';
+        btn.textContent    = isWished ? '🤍' : '❤️';
+        btn.title          = isWished ? 'Add to wishlist' : 'Remove from wishlist';
+        showToast(isWished ? '🤍 Wishlist se hataya' : '❤️ Wishlist mein add kiya!');
+      }
+    } catch { showToast('❌ Error', false); }
+  }
+
+  /* ── Book Now ── */
+  function bookNow(id, title) {
+    const token = localStorage.getItem('agriToken');
+    if (!token) {
+      showToast('⚠️ Please login to book equipment');
+      setTimeout(() => location.href = 'login.html', 1500);
+      return;
+    }
+    location.href = `booking.html?equipment_id=${id}&title=${encodeURIComponent(title)}`;
+  }
+
+  /* ── Pagination ── */
+  function renderPagination(total) {
+    const pages = Math.ceil(total / LIMIT);
+    const pg = document.getElementById('pagination');
+    if (pages <= 1) { pg.innerHTML = ''; return; }
+    let html = `<button class="page-btn" onclick="loadEquipment(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+    for (let i = 1; i <= pages; i++) {
+      html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="loadEquipment(${i})">${i}</button>`;
+    }
+    html += `<button class="page-btn" onclick="loadEquipment(${currentPage+1})" ${currentPage===pages?'disabled':''}>›</button>`;
+    pg.innerHTML = html;
+  }
+
+  /* ── Helpers ── */
+  function skeletons(n) {
+    return Array(n).fill(`
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-img"></div>
+      <div class="skeleton-body">
+        <div class="skeleton skeleton-line short"></div>
+        <div class="skeleton skeleton-line medium"></div>
+        <div class="skeleton skeleton-line long"></div>
+        <div class="skeleton skeleton-line medium"></div>
+      </div>
+    </div>`).join('');
+  }
+
+  function emptyState() {
+    return `<div class="empty-state">
+      <div class="empty-icon">🌾</div>
+      <h3>No equipment found</h3>
+      <p>Try changing your filters or search in a different location.</p>
+    </div>`;
+  }
+
+  function clearFilters() {
+    document.querySelectorAll('input[name="category"]')[0].checked = true;
+    document.querySelectorAll('input[name="available"]')[0].checked = true;
+    document.getElementById('minPrice').value = '';
+    document.getElementById('maxPrice').value = '';
+    document.getElementById('dateFilter').value = '';
+    document.getElementById('searchInput').value = '';
+    document.getElementById('locationInput').value = '';
+    loadEquipment();
+  }
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('show');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  /* Enter key search */
+  document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') loadEquipment(); });
+  document.getElementById('locationInput').addEventListener('keydown', e => { if (e.key === 'Enter') loadEquipment(); });
+
+  /* Load on start */
+  loadEquipment();
+
+  /* ── VOICE SEARCH ── */
+  function startVoiceSearch() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert('Chrome browser mein voice search kaam karta hai!'); return;
+    }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SR();
+    recognition.lang = 'hi-IN';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    const btn = document.getElementById('voiceSearchBtn');
+    btn.textContent = '🔴';
+    btn.style.animation = 'pulse 1s infinite';
+
+    recognition.onresult = (e) => {
+      const text = e.results[0][0].transcript;
+      document.getElementById('searchInput').value = text;
+      loadEquipment();
+    };
+    recognition.onerror = () => { btn.textContent = '🎤'; };
+    recognition.onend  = () => { btn.textContent = '🎤'; btn.style.animation = ''; };
+    recognition.start();
+  }
+</script>
+<script>
+// ── Push Notification Manager ──
+const AGRI_API = 'http://localhost:5000';
+
+async function initPushNotifications() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+  try {
+    // Register service worker
+    const reg = await navigator.serviceWorker.register('/sw.js');
+
+    // Check permission
+    if (Notification.permission === 'denied') return;
+
+    // Ask permission if not granted
+    if (Notification.permission !== 'granted') {
+      // Show custom prompt after 3 seconds
+      setTimeout(() => showNotifPrompt(reg), 3000);
+    }
+  } catch(err) { console.log('SW error:', err); }
+}
+
+function showNotifPrompt(reg) {
+  const token = localStorage.getItem('agriToken');
+  if (!token) return; // Only for logged in users
+
+  // Create prompt UI
+  const prompt = document.createElement('div');
+  prompt.id = 'notifPrompt';
+  prompt.innerHTML = `
+    <div style="position:fixed;bottom:90px;right:24px;background:white;border:1.5px solid #d1d5db;border-radius:12px;padding:14px 16px;max-width:280px;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:9998;font-family:'Poppins',sans-serif;animation:slideUp .3s ease">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:1.2rem">🔔</span>
+        <span style="font-size:0.85rem;font-weight:700;color:#0B3D2E">Notifications Enable Karo?</span>
+        <button onclick="document.getElementById('notifPrompt').remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#6b7280;font-size:1rem">✕</button>
+      </div>
+      <p style="font-size:0.75rem;color:#6b7280;margin-bottom:10px">Booking updates, payment alerts aur offers ke liye!</p>
+      <div style="display:flex;gap:8px">
+        <button onclick="enableNotifications('${reg ? 'yes' : 'no'}')" style="flex:1;background:#0B3D2E;color:white;border:none;border-radius:6px;padding:7px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif">✅ Haan, Enable Karo</button>
+        <button onclick="document.getElementById('notifPrompt').remove()" style="flex:1;background:#f3f4f6;color:#374151;border:none;border-radius:6px;padding:7px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif">Baad Mein</button>
+      </div>
+    </div>
+    <style>@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}</style>
+  `;
+  document.body.appendChild(prompt);
+}
+
+async function enableNotifications() {
+  document.getElementById('notifPrompt')?.remove();
+
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      showToastNotif('❌ Notification permission denied');
+      return;
+    }
+
+    const reg = await navigator.serviceWorker.ready;
+
+    // Subscribe to push
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array('BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjZkFZmkufggkt3rfcA55bEdOPog')
+    });
+
+    // Save to backend
+    const token = localStorage.getItem('agriToken');
+    await fetch(`${AGRI_API}/api/notifications/subscribe`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+      body: JSON.stringify(sub)
+    });
+
+    showToastNotif('🔔 Notifications enabled! Booking updates milenge.');
+
+    // Test notification
+    setTimeout(() => {
+      new Notification('🌾 AgriShare', {
+        body: 'Notifications successfully enable ho gayi! Ab booking updates milenge.',
+        icon: '/favicon.ico'
+      });
+    }, 1000);
+
+  } catch(err) {
+    showToastNotif('Notification setup failed: ' + err.message);
+  }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw     = window.atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+function showToastNotif(msg) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0B3D2E;color:white;padding:10px 20px;border-radius:8px;font-size:0.82rem;font-weight:500;z-index:99999;font-family:Poppins,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.2)';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// Auto init when page loads
+document.addEventListener('DOMContentLoaded', initPushNotifications);
+</script>
+
+<style>
+.chat-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.chat-fab-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0B3D2E 0%, #1e7a52 100%);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 20px rgba(11,61,46,0.4);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  animation: fabPulse 3s infinite;
+}
+
+.chat-fab-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 28px rgba(11,61,46,0.5);
+}
+
+@keyframes fabPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(11,61,46,0.4); }
+  50%       { box-shadow: 0 4px 28px rgba(11,61,46,0.7), 0 0 0 8px rgba(11,61,46,0.1); }
+}
+
+.chat-fab-tooltip {
+  background: #0B3D2E;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-family: 'Poppins', sans-serif;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.chat-fab:hover .chat-fab-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.chat-fab-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  background: #f5a623;
+  border-radius: 50%;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #0B3D2E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  animation: badgeBounce 1s ease infinite;
+}
+
+@keyframes badgeBounce {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.2); }
+}
+</style>
+
+<div class="chat-fab">
+  <div class="chat-fab-tooltip">🌾 Kisan Mitra AI</div>
+  <a href="chatbot.html" class="chat-fab-btn" title="AI Assistant">
+    🌾
+    <span class="chat-fab-badge">AI</span>
+  </a>
+</div>
+</body>
+</html>

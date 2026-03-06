@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — AgriShare</title>
+  <meta name="description" content="Login to your AgriShare account." />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>" />
+</head>
+<body>
+
+<div class="auth-page">
+
+  <!-- ============================================
+       LEFT VISUAL PANEL
+       ============================================ -->
+  <div class="auth-visual" style="background-image:url('https://images.pexels.com/photos/1382102/pexels-photo-1382102.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop');">
+
+    <a href="index.html" class="auth-visual-logo">
+      <div class="logo-icon">🌾</div>
+      <div>Agri<span style="color:var(--accent);">Share</span></div>
+    </a>
+
+    <div class="auth-visual-content">
+      <h2 class="auth-visual-tagline">
+        Welcome Back,<br /><span class="gold">Kisan Bhai!</span>
+      </h2>
+      <p class="auth-visual-text">
+        Log in to access your equipment listings, bookings, earnings, and AI-powered recommendations — all in your preferred language.
+      </p>
+      <div class="auth-visual-stats">
+        <div class="auth-stat">
+          <div class="auth-stat-num">98%</div>
+          <div class="auth-stat-label">Satisfaction Rate</div>
+        </div>
+        <div class="auth-stat">
+          <div class="auth-stat-num">24/7</div>
+          <div class="auth-stat-label">Support Available</div>
+        </div>
+        <div class="auth-stat">
+          <div class="auth-stat-num">₹0</div>
+          <div class="auth-stat-label">Hidden Fees</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       RIGHT FORM PANEL
+       ============================================ -->
+  <div class="auth-form-panel">
+
+    <!-- Logo -->
+    <a href="index.html" class="logo">
+      <div class="logo-icon">🌾</div>
+      <div class="logo-text">Agri<span>Share</span></div>
+    </a>
+
+    <h1 class="auth-title">Welcome Back</h1>
+    <p class="auth-sub">Don't have an account? <a href="signup.html">Create one free</a></p>
+
+    <!-- Alert Messages -->
+    <div id="alert-error" class="alert alert-hidden" role="alert"></div>
+    <div id="alert-success" class="alert alert-hidden" role="alert"></div>
+
+    <!-- Login Form -->
+    <form id="loginForm" novalidate autocomplete="on">
+
+      <!-- Credential -->
+      <div class="form-group">
+        <label class="form-label" for="credential">Mobile Number or Email <span>*</span></label>
+        <input class="form-input" type="text" id="credential" name="credential"
+               placeholder="Enter mobile or email" autocomplete="username" />
+        <span class="field-error" id="credential-err"></span>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label class="form-label" for="password">Password <span>*</span></label>
+        <div class="input-wrapper">
+          <input class="form-input" type="password" id="password" name="password"
+                 placeholder="Your password" autocomplete="current-password" />
+          <button type="button" class="toggle-password" data-target="password" aria-label="Toggle password visibility">👁️</button>
+        </div>
+        <span class="field-error" id="password-err"></span>
+      </div>
+
+      <!-- Remember Me + Forgot -->
+      <div class="form-meta">
+        <div class="checkbox-group">
+          <input type="checkbox" id="rememberMe" name="rememberMe" />
+          <label for="rememberMe">Remember me</label>
+        </div>
+        <a href="#" class="forgot-link" onclick="alert('Password reset link sent to your registered mobile/email!'); return false;">Forgot Password?</a>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="submit-btn" id="loginBtn">
+        🌾 Login to AgriShare
+      </button>
+
+    </form>
+
+    <div class="auth-divider">new here?</div>
+
+    <a href="signup.html" class="submit-btn" style="background:transparent;border:2px solid var(--primary);color:var(--primary);margin-top:0;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;">
+      ✨ Create Free Account
+    </a>
+
+    <!-- Demo Hint -->
+    <div style="margin-top:24px;padding:14px;background:rgba(11,61,46,0.05);border-radius:10px;border-left:3px solid var(--accent);">
+      <p style="font-size:0.78rem;color:var(--text-mid);line-height:1.6;">
+        <strong style="color:var(--primary);">💡 Demo:</strong> Sign up first at <a href="signup.html" style="color:var(--primary);font-weight:600;">signup.html</a>, then login with your credentials. All data is stored locally in your browser.
+      </p>
+    </div>
+
+    <!-- Language Selector -->
+    <div style="margin-top:20px;">
+      <label style="font-size:0.78rem;color:var(--text-light);display:block;margin-bottom:6px;">Interface Language:</label>
+      <select class="lang-select" style="background:var(--secondary);border:1.5px solid #e0e0e0;color:var(--text-dark);padding:10px 14px;border-radius:8px;font-family:inherit;cursor:pointer;width:auto;">
+      </select>
+    </div>
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

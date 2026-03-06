@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Refer & Earn — AgriShare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --green:#0B3D2E; --green-mid:#145a3c; --green-light:#1e7a52;
+      --accent:#f5a623; --beige:#F5F1E8; --beige2:#ede8da;
+      --text:#1a1a1a; --muted:#6b7280; --border:#d1d5db; --white:#ffffff;
+      --radius:10px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Poppins',sans-serif;background:var(--beige);color:var(--text);min-height:100vh}
+
+    .navbar{background:var(--green);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .nav-logo{color:var(--white);font-size:1.1rem;font-weight:700;text-decoration:none}
+    .nav-logo span{color:var(--accent)}
+    .nav-back{color:rgba(255,255,255,0.8);font-size:0.85rem;text-decoration:none;padding:5px 12px;border-radius:6px}
+    .nav-back:hover{background:rgba(255,255,255,0.1);color:var(--white)}
+
+    .hero{background:linear-gradient(135deg,var(--green) 0%,var(--green-mid) 60%,#f5a623 100%);padding:32px 20px;text-align:center;color:var(--white);position:relative;overflow:hidden}
+    .hero::before{content:'🌾';position:absolute;font-size:8rem;opacity:.07;right:-20px;top:-10px}
+    .hero::after{content:'🎁';position:absolute;font-size:6rem;opacity:.07;left:-10px;bottom:-10px}
+    .hero h1{font-size:1.6rem;font-weight:700;margin-bottom:6px}
+    .hero p{font-size:0.88rem;color:rgba(255,255,255,0.85);max-width:400px;margin:0 auto}
+
+    .main{max-width:700px;margin:0 auto;padding:20px 16px 48px}
+
+    /* Points card */
+    .points-card{background:linear-gradient(135deg,var(--green) 0%,var(--green-light) 100%);border-radius:16px;padding:24px;color:var(--white);text-align:center;margin-bottom:20px;position:relative;overflow:hidden}
+    .points-card::before{content:'⭐';position:absolute;font-size:6rem;opacity:.08;right:10px;top:10px}
+    .points-num{font-size:3rem;font-weight:700;line-height:1}
+    .points-label{font-size:0.82rem;color:rgba(255,255,255,0.75);margin-top:4px}
+    .points-row{display:flex;justify-content:center;gap:24px;margin-top:16px}
+    .points-stat{text-align:center}
+    .points-stat-num{font-size:1.3rem;font-weight:700}
+    .points-stat-label{font-size:0.7rem;color:rgba(255,255,255,0.65)}
+
+    /* Referral code card */
+    .card{background:var(--white);border-radius:var(--radius);border:1.5px solid var(--border);padding:20px;margin-bottom:16px}
+    .card-title{font-size:0.9rem;font-weight:700;color:var(--green);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+    .code-box{background:var(--beige);border:2px dashed var(--accent);border-radius:10px;padding:16px;text-align:center;margin-bottom:14px}
+    .referral-code{font-size:1.8rem;font-weight:700;color:var(--green);letter-spacing:4px;margin-bottom:6px}
+    .code-sub{font-size:0.75rem;color:var(--muted)}
+
+    .copy-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--green);color:var(--white);border:none;border-radius:8px;padding:10px 20px;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;width:100%;transition:background .2s;margin-bottom:10px}
+    .copy-btn:hover{background:var(--green-light)}
+    .wa-share-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:var(--white);border:none;border-radius:8px;padding:10px 20px;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;width:100%;transition:opacity .2s;text-decoration:none}
+    .wa-share-btn:hover{opacity:.88}
+
+    /* How it works */
+    .steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+    .step{background:var(--beige);border-radius:var(--radius);padding:14px;text-align:center}
+    .step-icon{font-size:1.8rem;margin-bottom:6px}
+    .step-title{font-size:0.8rem;font-weight:700;margin-bottom:4px}
+    .step-desc{font-size:0.72rem;color:var(--muted)}
+    .step-arrow{display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--muted)}
+
+    /* Rewards */
+    .reward-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--beige2)}
+    .reward-row:last-child{border-bottom:none}
+    .reward-icon{font-size:1.4rem;margin-right:10px}
+    .reward-name{font-size:0.85rem;font-weight:600}
+    .reward-desc{font-size:0.72rem;color:var(--muted);margin-top:2px}
+    .reward-points{font-size:1rem;font-weight:700;color:var(--green)}
+
+    /* Leaderboard */
+    .leader-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--beige2)}
+    .leader-row:last-child{border-bottom:none}
+    .leader-rank{font-size:1.2rem;width:30px;text-align:center;flex-shrink:0}
+    .leader-av{width:36px;height:36px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;flex-shrink:0}
+    .leader-name{font-size:0.85rem;font-weight:600;flex:1}
+    .leader-pts{font-size:0.85rem;font-weight:700;color:var(--green)}
+
+    /* Apply code */
+    .apply-row{display:flex;gap:10px;margin-top:10px}
+    .apply-input{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:9px 14px;font-size:0.88rem;font-family:'Poppins',sans-serif;outline:none;text-transform:uppercase;letter-spacing:2px}
+    .apply-input:focus{border-color:var(--green-light)}
+    .apply-btn{background:var(--accent);color:var(--green);border:none;border-radius:8px;padding:9px 18px;font-size:0.88rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;white-space:nowrap}
+
+    .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:var(--white);padding:12px 20px;border-radius:8px;font-size:0.85rem;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,0.2);transform:translateY(80px);opacity:0;transition:all .3s;z-index:999}
+    .toast.show{transform:translateY(0);opacity:1}
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">🌾 Agri<span>Share</span></a>
+  <a href="dashboard.html" class="nav-back">← Dashboard</a>
+</nav>
+
+<div class="hero">
+  <h1>🎁 Refer & Earn</h1>
+  <p>Doston ko invite karo, dono ko bonus points milenge! Points se discount pao.</p>
+</div>
+
+<div class="main">
+
+  <!-- Points Card -->
+  <div class="points-card">
+    <div class="points-num" id="myPoints">—</div>
+    <div class="points-label">Tumhare Points</div>
+    <div class="points-row">
+      <div class="points-stat">
+        <div class="points-stat-num" id="totalRefs">—</div>
+        <div class="points-stat-label">Total Referrals</div>
+      </div>
+      <div class="points-stat">
+        <div class="points-stat-num" id="completedRefs">—</div>
+        <div class="points-stat-label">Successful</div>
+      </div>
+      <div class="points-stat">
+        <div class="points-stat-num">₹<span id="pointsValue">—</span></div>
+        <div class="points-stat-label">Discount Value</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Referral Code -->
+  <div class="card">
+    <div class="card-title">🔗 Tumhara Referral Code</div>
+    <div class="code-box">
+      <div class="referral-code" id="refCode">Loading...</div>
+      <div class="code-sub">Yeh code share karo apne doston ke saath</div>
+    </div>
+    <button class="copy-btn" onclick="copyCode()">📋 Code Copy Karo</button>
+    <a class="wa-share-btn" id="waShareBtn" href="#" target="_blank">📱 WhatsApp pe Share Karo</a>
+  </div>
+
+  <!-- How it works -->
+  <div class="card">
+    <div class="card-title">📋 Kaise kaam karta hai?</div>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-icon">🔗</div>
+        <div class="step-title">Share Karo</div>
+        <div class="step-desc">Apna referral code ya link WhatsApp pe bhejo</div>
+      </div>
+      <div class="step">
+        <div class="step-icon">👥</div>
+        <div class="step-title">Dost Join Kare</div>
+        <div class="step-desc">Dost tumhara code use karke signup kare</div>
+      </div>
+      <div class="step">
+        <div class="step-icon">🎁</div>
+        <div class="step-title">Dono Ko Bonus</div>
+        <div class="step-desc">Tum: 50 pts, Dost: 25 pts automatic!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rewards -->
+  <div class="card">
+    <div class="card-title">⭐ Points System</div>
+    <div class="reward-row">
+      <div style="display:flex;align-items:center">
+        <span class="reward-icon">👥</span>
+        <div><div class="reward-name">Dost ko refer karo</div><div class="reward-desc">Dost signup kare toh</div></div>
+      </div>
+      <div class="reward-points">+50 pts</div>
+    </div>
+    <div class="reward-row">
+      <div style="display:flex;align-items:center">
+        <span class="reward-icon">🆕</span>
+        <div><div class="reward-name">Referral se join karo</div><div class="reward-desc">Kisi ke code se signup karo</div></div>
+      </div>
+      <div class="reward-points">+25 pts</div>
+    </div>
+    <div class="reward-row">
+      <div style="display:flex;align-items:center">
+        <span class="reward-icon">💰</span>
+        <div><div class="reward-name">Points ki value</div><div class="reward-desc">100 points = ₹10 discount</div></div>
+      </div>
+      <div class="reward-points">100=₹10</div>
+    </div>
+  </div>
+
+  <!-- Apply Referral Code -->
+  <div class="card">
+    <div class="card-title">🎟️ Kisi ka Referral Code Apply Karo</div>
+    <div style="font-size:0.82rem;color:var(--muted);margin-bottom:10px">Agar kisi ne tumhe refer kiya hai toh uska code daalo aur 25 bonus points pao!</div>
+    <div class="apply-row">
+      <input class="apply-input" type="text" id="applyCodeInput" placeholder="AGR123XYZ" maxlength="15" />
+      <button class="apply-btn" onclick="applyCode()">✅ Apply</button>
+    </div>
+    <div id="applyMsg" style="font-size:0.82rem;margin-top:8px;display:none"></div>
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="card">
+    <div class="card-title">🏆 Top Referrers</div>
+    <div id="leaderboard"><div style="color:var(--muted);font-size:0.85rem;text-align:center;padding:20px">Loading...</div></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API   = 'http://localhost:5000';
+  const token = localStorage.getItem('agriToken');
+  if (!token) location.href = 'login.html';
+
+  async function loadReferral() {
+    try {
+      const res  = await fetch(`${API}/api/referral/my`, { headers:{ Authorization:`Bearer ${token}` } });
+      const json = await res.json();
+      if (!json.success) return;
+
+      document.getElementById('refCode').textContent         = json.referral_code;
+      document.getElementById('myPoints').textContent        = json.points;
+      document.getElementById('totalRefs').textContent       = json.total_referrals;
+      document.getElementById('completedRefs').textContent   = json.completed_referrals;
+      document.getElementById('pointsValue').textContent     = Math.floor(json.points / 10);
+      document.getElementById('waShareBtn').href = `https://wa.me/?text=${json.whatsapp_msg}`;
+
+      // Check URL for pre-filled code
+      const urlCode = new URLSearchParams(location.search).get('ref');
+      if (urlCode) document.getElementById('applyCodeInput').value = urlCode;
+
+    } catch(err) { console.error(err); }
+  }
+
+  async function loadLeaderboard() {
+    try {
+      const res  = await fetch(`${API}/api/referral/leaderboard`);
+      const json = await res.json();
+      const el   = document.getElementById('leaderboard');
+      const ranks = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+
+      if (!json.data?.length) { el.innerHTML = `<div style="color:var(--muted);font-size:0.85rem;text-align:center;padding:20px">Abhi koi data nahi</div>`; return; }
+
+      el.innerHTML = json.data.map((u,i) => `
+        <div class="leader-row">
+          <div class="leader-rank">${ranks[i]||i+1}</div>
+          <div class="leader-av">${u.full_name[0].toUpperCase()}</div>
+          <div>
+            <div class="leader-name">${u.full_name}</div>
+            <div style="font-size:0.7rem;color:var(--muted)">${u.total_referrals} referrals • ${u.location||'India'}</div>
+          </div>
+          <div class="leader-pts">${u.referral_points} pts</div>
+        </div>`).join('');
+    } catch { /* ignore */ }
+  }
+
+  function copyCode() {
+    const code = document.getElementById('refCode').textContent;
+    navigator.clipboard.writeText(code).then(() => showToast('✅ Code copy ho gaya!'));
+  }
+
+  async function applyCode() {
+    const code = document.getElementById('applyCodeInput').value.trim().toUpperCase();
+    const msg  = document.getElementById('applyMsg');
+    if (!code) return;
+
+    try {
+      const res  = await fetch(`${API}/api/referral/apply`, {
+        method: 'POST',
+        headers: { Authorization:`Bearer ${token}`, 'Content-Type':'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const json = await res.json();
+      msg.style.display = 'block';
+      if (json.success) {
+        msg.style.color = '#065f46';
+        msg.textContent = '🎁 ' + json.message;
+        showToast('🎁 +25 Points mile!');
+        loadReferral();
+      } else {
+        msg.style.color = '#991b1b';
+        msg.textContent = '⚠️ ' + json.message;
+      }
+    } catch { msg.style.display='block'; msg.style.color='#991b1b'; msg.textContent='❌ Server error'; }
+  }
+
+  function showToast(msg, ok=true) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.background = ok ? 'var(--green)' : '#e53e3e';
+    el.classList.add('show');
+    setTimeout(()=>el.classList.remove('show'), 3000);
+  }
+
+  loadReferral();
+  loadLeaderboard();
+</script>
+</body>
+</html>

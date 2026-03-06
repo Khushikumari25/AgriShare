@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compare Equipment — AgriShare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --green:#0B3D2E; --green-mid:#145a3c; --green-light:#1e7a52;
+      --accent:#f5a623; --beige:#F5F1E8; --beige2:#ede8da;
+      --text:#1a1a1a; --muted:#6b7280; --border:#d1d5db; --white:#ffffff; --red:#e53e3e;
+      --shadow:0 2px 12px rgba(11,61,46,0.10); --radius:10px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Poppins',sans-serif;background:var(--beige);color:var(--text);min-height:100vh}
+
+    .navbar{background:var(--green);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .nav-logo{color:var(--white);font-size:1.1rem;font-weight:700;text-decoration:none}
+    .nav-logo span{color:var(--accent)}
+    .nav-links{display:flex;gap:8px}
+    .nav-btn{color:rgba(255,255,255,0.8);font-size:0.82rem;text-decoration:none;padding:5px 12px;border-radius:6px;transition:all .2s}
+    .nav-btn:hover{background:rgba(255,255,255,0.1);color:var(--white)}
+
+    .page-header{background:linear-gradient(135deg,var(--green) 0%,var(--green-mid) 100%);padding:24px;color:var(--white);text-align:center}
+    .page-header h1{font-size:1.3rem;font-weight:700;margin-bottom:4px}
+    .page-header p{font-size:0.82rem;color:rgba(255,255,255,0.75)}
+
+    .main{max-width:1100px;margin:0 auto;padding:20px 16px 48px}
+
+    /* SEARCH & ADD */
+    .add-section{background:var(--white);border-radius:var(--radius);border:1.5px solid var(--border);padding:16px;margin-bottom:20px}
+    .add-title{font-size:0.88rem;font-weight:700;margin-bottom:12px;color:var(--green)}
+    .search-row{display:flex;gap:10px;flex-wrap:wrap}
+    .search-input{flex:1;min-width:200px;border:1.5px solid var(--border);border-radius:8px;padding:9px 14px;font-size:0.88rem;font-family:'Poppins',sans-serif;outline:none;transition:border-color .2s}
+    .search-input:focus{border-color:var(--green-light)}
+    .search-btn{background:var(--green);color:var(--white);border:none;border-radius:8px;padding:9px 18px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;transition:background .2s}
+    .search-btn:hover{background:var(--green-light)}
+
+    /* SEARCH RESULTS */
+    .search-results{margin-top:12px;display:none;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;max-height:250px;overflow-y:auto}
+    .result-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--beige2);cursor:pointer;transition:background .2s}
+    .result-item:last-child{border-bottom:none}
+    .result-item:hover{background:var(--beige)}
+    .result-name{font-size:0.85rem;font-weight:600}
+    .result-meta{font-size:0.75rem;color:var(--muted)}
+    .add-btn{background:var(--green);color:var(--white);border:none;border-radius:6px;padding:5px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;white-space:nowrap}
+
+    /* COMPARE TABLE */
+    .compare-wrap{overflow-x:auto}
+    .compare-table{width:100%;border-collapse:separate;border-spacing:0}
+
+    /* Column headers */
+    .compare-table th{padding:0;vertical-align:top}
+    .col-label{width:160px;min-width:160px}
+    .col-equip{min-width:220px}
+
+    .equip-card-head{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;padding:16px;text-align:center;position:relative}
+    .equip-card-head .remove-btn{position:absolute;top:8px;right:8px;background:none;border:none;font-size:1rem;cursor:pointer;color:var(--muted);transition:color .2s}
+    .equip-card-head .remove-btn:hover{color:var(--red)}
+    .equip-emoji-big{font-size:2.5rem;display:block;margin-bottom:6px}
+    .equip-head-name{font-size:0.9rem;font-weight:700;margin-bottom:3px}
+    .equip-head-owner{font-size:0.72rem;color:var(--muted)}
+    .best-badge{display:inline-block;background:var(--accent);color:var(--green);font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:20px;margin-top:4px}
+
+    .label-cell{background:var(--beige);border:1.5px solid var(--border);padding:12px 14px;font-size:0.8rem;font-weight:600;color:var(--muted);vertical-align:middle;border-top:none}
+    .label-cell:first-child{border-radius:0}
+
+    .value-cell{background:var(--white);border:1.5px solid var(--border);padding:12px 14px;font-size:0.85rem;text-align:center;vertical-align:middle;border-top:none;transition:background .2s}
+    .value-cell.highlight{background:#f0faf5;font-weight:700;color:var(--green)}
+    .value-cell.worst{background:#fff5f5;color:var(--red)}
+
+    /* Slot — empty column */
+    .slot-card{background:var(--white);border:2px dashed var(--border);border-radius:var(--radius);padding:24px 16px;text-align:center;cursor:pointer;transition:all .2s;min-width:200px}
+    .slot-card:hover{border-color:var(--green);background:#f0faf5}
+    .slot-icon{font-size:2rem;margin-bottom:8px;color:var(--muted)}
+    .slot-text{font-size:0.82rem;color:var(--muted);font-weight:500}
+
+    .book-btn{display:block;background:var(--green);color:var(--white);border:none;border-radius:8px;padding:9px 14px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;text-align:center;text-decoration:none;margin:10px auto;width:90%;transition:background .2s}
+    .book-btn:hover{background:var(--green-light)}
+
+    .star{color:#f59e0b}
+    .no-data{color:var(--muted);font-size:0.75rem}
+
+    /* Empty state */
+    .empty-compare{text-align:center;padding:48px 20px;background:var(--white);border-radius:var(--radius);border:1.5px solid var(--border)}
+    .empty-compare .icon{font-size:3.5rem;margin-bottom:12px}
+    .empty-compare h3{font-size:1rem;font-weight:700;margin-bottom:6px}
+    .empty-compare p{font-size:0.82rem;color:var(--muted)}
+
+    .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:var(--white);padding:12px 20px;border-radius:8px;font-size:0.85rem;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,0.2);transform:translateY(80px);opacity:0;transition:all .3s;z-index:999}
+    .toast.show{transform:translateY(0);opacity:1}
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="nav-logo">🌾 Agri<span>Share</span></a>
+  <div class="nav-links">
+    <a href="equipment.html" class="nav-btn">← Browse</a>
+    <a href="map.html" class="nav-btn">🗺️ Map</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h1>⚖️ Compare Equipment</h1>
+  <p>2-3 equipment side by side compare karo — best deal chunno!</p>
+</div>
+
+<div class="main">
+
+  <!-- Search & Add -->
+  <div class="add-section">
+    <div class="add-title">➕ Equipment add karo (max 3)</div>
+    <div class="search-row">
+      <input class="search-input" type="text" id="searchInput" placeholder="🔍 Equipment naam ya category likho..." oninput="searchEquip(this.value)" />
+      <button class="search-btn" onclick="searchEquip(document.getElementById('searchInput').value)">Search</button>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+
+  <!-- Compare Table -->
+  <div id="compareArea">
+    <div class="empty-compare">
+      <div class="icon">⚖️</div>
+      <h3>Koi equipment select nahi kiya</h3>
+      <p>Upar search karo aur equipment add karo comparison ke liye</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = 'http://localhost:5000';
+  const catEmoji = {tractor:'🚜',rotavator:'⚙️',sprayer:'💧',harvester:'🌾',vehicle:'🚐',other:'🔧'};
+  let allEquip   = [];
+  let selected   = []; // max 3
+  let searchTimer;
+
+  // Load all equipment on start
+  async function loadAll() {
+    try {
+      const res  = await fetch(`${API}/api/equipment?limit=100&available=`);
+      const json = await res.json();
+      allEquip   = json.data || [];
+    } catch { /* ignore */ }
+  }
+
+  // Search
+  function searchEquip(q) {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      const resultsEl = document.getElementById('searchResults');
+      if (!q.trim()) { resultsEl.style.display = 'none'; return; }
+      const filtered = allEquip.filter(e =>
+        e.title.toLowerCase().includes(q.toLowerCase()) ||
+        e.category.toLowerCase().includes(q.toLowerCase()) ||
+        (e.location||'').toLowerCase().includes(q.toLowerCase())
+      ).slice(0, 10);
+
+      if (!filtered.length) {
+        resultsEl.innerHTML = `<div class="result-item"><div class="result-name" style="color:var(--muted)">Koi result nahi mila</div></div>`;
+      } else {
+        resultsEl.innerHTML = filtered.map(e => `
+          <div class="result-item" onclick="addToCompare(${e.id})">
+            <div>
+              <div class="result-name">${catEmoji[e.category]||'🔧'} ${e.title}</div>
+              <div class="result-meta">📍 ${e.location||'—'} • ₹${parseFloat(e.price_per_day).toLocaleString('en-IN')}/day • ${e.is_available?'✅ Available':'❌ Booked'}</div>
+            </div>
+            <button class="add-btn" onclick="event.stopPropagation();addToCompare(${e.id})">+ Add</button>
+          </div>`).join('');
+      }
+      resultsEl.style.display = 'block';
+    }, 300);
+  }
+
+  function addToCompare(id) {
+    if (selected.length >= 3) { showToast('⚠️ Max 3 equipment compare ho sakte hain!', false); return; }
+    if (selected.find(e => e.id === id)) { showToast('⚠️ Yeh already add hai!', false); return; }
+    const equip = allEquip.find(e => e.id === id);
+    if (!equip) return;
+    selected.push(equip);
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('searchInput').value = '';
+    renderCompare();
+    showToast(`✅ "${equip.title}" add kiya!`);
+  }
+
+  function removeFromCompare(id) {
+    selected = selected.filter(e => e.id !== id);
+    renderCompare();
+  }
+
+  function renderCompare() {
+    const area = document.getElementById('compareArea');
+    if (!selected.length) {
+      area.innerHTML = `<div class="empty-compare"><div class="icon">⚖️</div><h3>Koi equipment select nahi kiya</h3><p>Upar search karo aur equipment add karo comparison ke liye</p></div>`;
+      return;
+    }
+
+    // Find best values
+    const minPrice   = Math.min(...selected.map(e => parseFloat(e.price_per_day)));
+    const maxRating  = Math.max(...selected.map(e => parseFloat(e.avg_rating || 0)));
+
+    const rows = [
+      { label: '💰 Price/Day',      key: e => `₹${parseFloat(e.price_per_day).toLocaleString('en-IN')}`,  best: e => parseFloat(e.price_per_day) === minPrice, worst: false },
+      { label: '⏰ Price/Hour',      key: e => e.price_per_hour ? `₹${parseFloat(e.price_per_hour).toLocaleString('en-IN')}` : '<span class="no-data">—</span>', best: false, worst: false },
+      { label: '📍 Location',        key: e => e.location || '—',          best: false, worst: false },
+      { label: '📂 Category',        key: e => `${catEmoji[e.category]||'🔧'} ${e.category}`, best: false, worst: false },
+      { label: '⭐ Rating',          key: e => e.avg_rating ? `${'⭐'.repeat(Math.round(e.avg_rating))} (${e.avg_rating})` : '<span class="no-data">No reviews</span>', best: e => parseFloat(e.avg_rating||0) === maxRating && maxRating > 0, worst: false },
+      { label: '✅ Availability',    key: e => e.is_available ? '✅ Available Now' : '❌ Currently Booked', best: e => e.is_available, worst: e => !e.is_available },
+      { label: '👤 Owner',           key: e => e.owner_name || '—',        best: false, worst: false },
+      { label: '📞 Contact',         key: e => e.owner_mobile || '<span class="no-data">Login to view</span>', best: false, worst: false },
+      { label: '📝 Description',     key: e => e.description ? `<span style="font-size:0.78rem">${e.description.substring(0,80)}${e.description.length>80?'...':''}</span>` : '<span class="no-data">No description</span>', best: false, worst: false },
+    ];
+
+    const slotsLeft = 3 - selected.length;
+
+    area.innerHTML = `
+      <div class="compare-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th class="col-label" style="padding:8px"></th>
+              ${selected.map(e => `
+                <th class="col-equip">
+                  <div class="equip-card-head">
+                    <button class="remove-btn" onclick="removeFromCompare(${e.id})" title="Remove">✕</button>
+                    <span class="equip-emoji-big">${catEmoji[e.category]||'🔧'}</span>
+                    <div class="equip-head-name">${e.title}</div>
+                    <div class="equip-head-owner">by ${e.owner_name||'Owner'}</div>
+                    ${parseFloat(e.price_per_day) === minPrice ? '<span class="best-badge">💰 Best Price</span>' : ''}
+                  </div>
+                </th>`).join('')}
+              ${Array(slotsLeft).fill(0).map(()=>`
+                <th class="col-equip" style="padding:8px">
+                  <div class="slot-card" onclick="document.getElementById('searchInput').focus()">
+                    <div class="slot-icon">➕</div>
+                    <div class="slot-text">Add Equipment</div>
+                  </div>
+                </th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(row => `
+              <tr>
+                <td class="label-cell">${row.label}</td>
+                ${selected.map(e => `
+                  <td class="value-cell ${row.best && typeof row.best === 'function' && row.best(e) ? 'highlight' : ''} ${row.worst && typeof row.worst === 'function' && row.worst(e) ? 'worst' : ''}">
+                    ${row.key(e)}
+                  </td>`).join('')}
+                ${Array(slotsLeft).fill(0).map(()=>'<td style="background:#fafafa;border:1.5px solid var(--border);border-top:none"></td>').join('')}
+              </tr>`).join('')}
+            <tr>
+              <td class="label-cell">🛒 Action</td>
+              ${selected.map(e => `
+                <td style="background:var(--white);border:1.5px solid var(--border);border-top:none;padding:8px">
+                  <a href="equipment-detail.html?id=${e.id}" class="book-btn">${e.is_available ? '📅 Book Now' : '👁️ View Details'}</a>
+                </td>`).join('')}
+              ${Array(slotsLeft).fill(0).map(()=>'<td style="background:#fafafa;border:1.5px solid var(--border);border-top:none"></td>').join('')}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      ${selected.length > 1 ? `
+      <div style="background:var(--white);border-radius:var(--radius);border:1.5px solid var(--border);padding:16px;margin-top:16px">
+        <div style="font-size:0.88rem;font-weight:700;color:var(--green);margin-bottom:10px">🤖 AgriShare Recommendation</div>
+        <div style="font-size:0.85rem;line-height:1.7">${getRecommendation()}</div>
+      </div>` : ''}
+    `;
+  }
+
+  function getRecommendation() {
+    if (selected.length < 2) return '';
+    const available = selected.filter(e => e.is_available);
+    const cheapest  = [...selected].sort((a,b) => parseFloat(a.price_per_day) - parseFloat(b.price_per_day))[0];
+    const bestRated = [...selected].sort((a,b) => parseFloat(b.avg_rating||0) - parseFloat(a.avg_rating||0))[0];
+
+    let rec = '';
+    if (available.length === 0) {
+      rec = '⚠️ Abhi koi equipment available nahi hai. Baad mein check karo.';
+    } else if (available.length === 1) {
+      rec = `✅ Sirf <b>${available[0].title}</b> abhi available hai — yahi best option hai!`;
+    } else {
+      rec = `💰 Sabse sasta: <b>${cheapest.title}</b> (₹${parseFloat(cheapest.price_per_day).toLocaleString('en-IN')}/day)`;
+      if (bestRated.avg_rating) {
+        rec += `<br>⭐ Sabse zyada rating: <b>${bestRated.title}</b> (${bestRated.avg_rating}/5)`;
+      }
+      rec += `<br><br>👉 Budget mein best value ke liye <b>${cheapest.title}</b> recommend hai!`;
+    }
+    return rec;
+  }
+
+  function showToast(msg, ok=true) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.background = ok ? 'var(--green)' : 'var(--red)';
+    el.classList.add('show');
+    setTimeout(()=>el.classList.remove('show'), 3000);
+  }
+
+  // Close search results on outside click
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.add-section')) {
+      document.getElementById('searchResults').style.display = 'none';
+    }
+  });
+
+  loadAll();
+</script>
+<script>
+// ── Push Notification Manager ──
+const AGRI_API = 'http://localhost:5000';
+
+async function initPushNotifications() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+  try {
+    // Register service worker
+    const reg = await navigator.serviceWorker.register('/sw.js');
+
+    // Check permission
+    if (Notification.permission === 'denied') return;
+
+    // Ask permission if not granted
+    if (Notification.permission !== 'granted') {
+      // Show custom prompt after 3 seconds
+      setTimeout(() => showNotifPrompt(reg), 3000);
+    }
+  } catch(err) { console.log('SW error:', err); }
+}
+
+function showNotifPrompt(reg) {
+  const token = localStorage.getItem('agriToken');
+  if (!token) return; // Only for logged in users
+
+  // Create prompt UI
+  const prompt = document.createElement('div');
+  prompt.id = 'notifPrompt';
+  prompt.innerHTML = `
+    <div style="position:fixed;bottom:90px;right:24px;background:white;border:1.5px solid #d1d5db;border-radius:12px;padding:14px 16px;max-width:280px;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:9998;font-family:'Poppins',sans-serif;animation:slideUp .3s ease">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:1.2rem">🔔</span>
+        <span style="font-size:0.85rem;font-weight:700;color:#0B3D2E">Notifications Enable Karo?</span>
+        <button onclick="document.getElementById('notifPrompt').remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#6b7280;font-size:1rem">✕</button>
+      </div>
+      <p style="font-size:0.75rem;color:#6b7280;margin-bottom:10px">Booking updates, payment alerts aur offers ke liye!</p>
+      <div style="display:flex;gap:8px">
+        <button onclick="enableNotifications('${reg ? 'yes' : 'no'}')" style="flex:1;background:#0B3D2E;color:white;border:none;border-radius:6px;padding:7px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif">✅ Haan, Enable Karo</button>
+        <button onclick="document.getElementById('notifPrompt').remove()" style="flex:1;background:#f3f4f6;color:#374151;border:none;border-radius:6px;padding:7px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif">Baad Mein</button>
+      </div>
+    </div>
+    <style>@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}</style>
+  `;
+  document.body.appendChild(prompt);
+}
+
+async function enableNotifications() {
+  document.getElementById('notifPrompt')?.remove();
+
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      showToastNotif('❌ Notification permission denied');
+      return;
+    }
+
+    const reg = await navigator.serviceWorker.ready;
+
+    // Subscribe to push
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array('BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjZkFZmkufggkt3rfcA55bEdOPog')
+    });
+
+    // Save to backend
+    const token = localStorage.getItem('agriToken');
+    await fetch(`${AGRI_API}/api/notifications/subscribe`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+      body: JSON.stringify(sub)
+    });
+
+    showToastNotif('🔔 Notifications enabled! Booking updates milenge.');
+
+    // Test notification
+    setTimeout(() => {
+      new Notification('🌾 AgriShare', {
+        body: 'Notifications successfully enable ho gayi! Ab booking updates milenge.',
+        icon: '/favicon.ico'
+      });
+    }, 1000);
+
+  } catch(err) {
+    showToastNotif('Notification setup failed: ' + err.message);
+  }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw     = window.atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+function showToastNotif(msg) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0B3D2E;color:white;padding:10px 20px;border-radius:8px;font-size:0.82rem;font-weight:500;z-index:99999;font-family:Poppins,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.2)';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// Auto init when page loads
+document.addEventListener('DOMContentLoaded', initPushNotifications);
+</script>
+
+<style>
+.chat-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.chat-fab-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0B3D2E 0%, #1e7a52 100%);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 20px rgba(11,61,46,0.4);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  animation: fabPulse 3s infinite;
+}
+
+.chat-fab-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 28px rgba(11,61,46,0.5);
+}
+
+@keyframes fabPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(11,61,46,0.4); }
+  50%       { box-shadow: 0 4px 28px rgba(11,61,46,0.7), 0 0 0 8px rgba(11,61,46,0.1); }
+}
+
+.chat-fab-tooltip {
+  background: #0B3D2E;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-family: 'Poppins', sans-serif;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.chat-fab:hover .chat-fab-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.chat-fab-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  background: #f5a623;
+  border-radius: 50%;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #0B3D2E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  animation: badgeBounce 1s ease infinite;
+}
+
+@keyframes badgeBounce {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.2); }
+}
+</style>
+
+<div class="chat-fab">
+  <div class="chat-fab-tooltip">🌾 Kisan Mitra AI</div>
+  <a href="chatbot.html" class="chat-fab-btn" title="AI Assistant">
+    🌾
+    <span class="chat-fab-badge">AI</span>
+  </a>
+</div>
+</body>
+</html>

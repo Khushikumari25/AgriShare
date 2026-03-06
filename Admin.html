@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — AgriShare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --green:       #0B3D2E;
+      --green-mid:   #145a3c;
+      --green-light: #1e7a52;
+      --accent:      #f5a623;
+      --beige:       #F5F1E8;
+      --beige2:      #ede8da;
+      --text:        #1a1a1a;
+      --muted:       #6b7280;
+      --border:      #d1d5db;
+      --white:       #ffffff;
+      --red:         #e53e3e;
+      --blue:        #3b82f6;
+      --purple:      #7c3aed;
+      --shadow:      0 2px 12px rgba(11,61,46,0.10);
+      --radius:      10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: #0f1923; color: var(--text); min-height: 100vh; }
+
+    /* ══════════════════════════
+       LOGIN SCREEN
+    ══════════════════════════ */
+    .login-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #0B3D2E 0%, #0f1923 60%);
+      padding: 20px;
+    }
+    .login-card {
+      background: var(--white); border-radius: 16px;
+      padding: 40px 36px; width: 100%; max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .login-logo { text-align: center; margin-bottom: 8px; font-size: 2rem; }
+    .login-title { text-align: center; font-size: 1.2rem; font-weight: 700; color: var(--green); margin-bottom: 4px; }
+    .login-sub   { text-align: center; font-size: 0.82rem; color: var(--muted); margin-bottom: 28px; }
+    .login-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+    .login-field label { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+    .login-field input {
+      border: 1.5px solid var(--border); border-radius: 8px;
+      padding: 10px 14px; font-size: 0.9rem; font-family: 'Poppins', sans-serif;
+      outline: none; transition: border-color .2s;
+    }
+    .login-field input:focus { border-color: var(--green-light); }
+    .login-btn {
+      width: 100%; background: var(--green); color: var(--white);
+      border: none; border-radius: 8px; padding: 12px;
+      font-size: 0.95rem; font-weight: 700; cursor: pointer;
+      font-family: 'Poppins', sans-serif; margin-top: 8px; transition: background .2s;
+    }
+    .login-btn:hover { background: var(--green-light); }
+    .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .login-error { background: #fee2e2; color: #991b1b; border-radius: 8px; padding: 10px 14px; font-size: 0.82rem; margin-top: 12px; display: none; }
+
+    /* ══════════════════════════
+       DASHBOARD LAYOUT
+    ══════════════════════════ */
+    .dashboard { display: none; min-height: 100vh; background: #f0f2f5; }
+    .dashboard.show { display: flex; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 230px; min-width: 230px; background: var(--green);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; height: 100vh; z-index: 100;
+    }
+    .sidebar-logo { padding: 20px 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-logo-text { font-size: 1.1rem; font-weight: 700; color: var(--white); }
+    .sidebar-logo-text span { color: var(--accent); }
+    .admin-badge { font-size: 0.65rem; background: var(--accent); color: var(--green); padding: 2px 8px; border-radius: 20px; font-weight: 700; margin-top: 4px; display: inline-block; }
+
+    .nav-section { padding: 10px 14px 4px; font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 1px; text-transform: uppercase; }
+    .nav-item { display: flex; align-items: center; gap: 9px; padding: 9px 14px; margin: 2px 8px; border-radius: 7px; cursor: pointer; color: rgba(255,255,255,0.7); font-size: 0.85rem; font-weight: 500; background: none; border: none; width: calc(100% - 16px); text-align: left; font-family: 'Poppins', sans-serif; transition: all .2s; }
+    .nav-item:hover  { background: rgba(255,255,255,0.08); color: var(--white); }
+    .nav-item.active { background: rgba(255,255,255,0.15); color: var(--white); font-weight: 600; }
+    .nav-item .icon  { font-size: 1rem; width: 18px; flex-shrink: 0; }
+    .nav-badge-count { margin-left: auto; background: var(--red); color: white; font-size: 0.62rem; font-weight: 700; padding: 1px 6px; border-radius: 20px; }
+
+    .sidebar-footer { margin-top: auto; padding: 14px 10px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .logout-btn { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); font-size: 0.82rem; cursor: pointer; background: none; border: none; font-family: 'Poppins', sans-serif; padding: 7px; transition: color .2s; }
+    .logout-btn:hover { color: var(--white); }
+
+    /* MAIN */
+    .main { margin-left: 230px; flex: 1; display: flex; flex-direction: column; }
+    .topbar { background: var(--white); border-bottom: 1.5px solid var(--border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .topbar-left { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+    .topbar-right { font-size: 0.8rem; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+    .topbar-time { background: var(--beige); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+
+    .page { padding: 22px; display: none; }
+    .page.active { display: block; }
+
+    /* ══════════════════════════
+       STATS CARDS
+    ══════════════════════════ */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+    .stat-card {
+      background: var(--white); border-radius: var(--radius);
+      border: 1.5px solid var(--border); padding: 18px;
+      display: flex; align-items: center; gap: 14px;
+      transition: box-shadow .2s;
+    }
+    .stat-card:hover { box-shadow: var(--shadow); }
+    .stat-icon-wrap { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+    .stat-icon-wrap.green  { background: #d1fae5; }
+    .stat-icon-wrap.orange { background: #fef3c7; }
+    .stat-icon-wrap.blue   { background: #dbeafe; }
+    .stat-icon-wrap.purple { background: #ede9fe; }
+    .stat-icon-wrap.red    { background: #fee2e2; }
+    .stat-num   { font-size: 1.5rem; font-weight: 700; color: var(--text); line-height: 1; }
+    .stat-label { font-size: 0.73rem; color: var(--muted); margin-top: 3px; }
+    .stat-change { font-size: 0.7rem; margin-top: 3px; }
+    .stat-change.up   { color: #10b981; }
+    .stat-change.down { color: var(--red); }
+
+    /* ══════════════════════════
+       CHARTS
+    ══════════════════════════ */
+    .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 22px; }
+    .chart-card { background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--border); padding: 18px; }
+    .chart-title { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .chart-sub { font-size: 0.72rem; color: var(--muted); font-weight: 400; }
+
+    /* Bar chart */
+    .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 140px; }
+    .bar-group { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+    .bar-wrap { display: flex; gap: 3px; align-items: flex-end; width: 100%; justify-content: center; }
+    .bar { width: 14px; border-radius: 4px 4px 0 0; transition: height .6s ease; min-height: 4px; }
+    .bar.bookings { background: var(--green); }
+    .bar.revenue  { background: var(--accent); opacity: 0.8; }
+    .bar-label { font-size: 0.62rem; color: var(--muted); text-align: center; }
+
+    /* Donut chart */
+    .donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .donut-svg { width: 130px; height: 130px; }
+    .donut-legend { width: 100%; display: flex; flex-direction: column; gap: 7px; }
+    .legend-item { display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; }
+    .legend-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .legend-label { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+    .legend-val { font-weight: 700; color: var(--text); }
+
+    /* ══════════════════════════
+       SECTION CARD / TABLE
+    ══════════════════════════ */
+    .section-card { background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--border); overflow: hidden; margin-bottom: 20px; }
+    .section-header { padding: 14px 20px; border-bottom: 1.5px solid var(--beige2); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .section-header h2 { font-size: 0.9rem; font-weight: 700; }
+    .search-input { border: 1.5px solid var(--border); border-radius: 7px; padding: 6px 12px; font-size: 0.82rem; font-family: 'Poppins', sans-serif; outline: none; width: 200px; transition: border-color .2s; }
+    .search-input:focus { border-color: var(--green-light); }
+    .filter-select { border: 1.5px solid var(--border); border-radius: 7px; padding: 6px 10px; font-size: 0.82rem; font-family: 'Poppins', sans-serif; outline: none; cursor: pointer; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: 9px 14px; text-align: left; font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; background: var(--beige); border-bottom: 1.5px solid var(--border); white-space: nowrap; }
+    td { padding: 11px 14px; font-size: 0.82rem; border-bottom: 1px solid var(--beige2); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafaf8; }
+
+    .status-badge { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
+    .status-pending   { background: #fef3c7; color: #92400e; }
+    .status-confirmed { background: #d1fae5; color: #065f46; }
+    .status-completed { background: #dbeafe; color: #1e40af; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    .status-active    { background: #d1fae5; color: #065f46; }
+    .status-blocked   { background: #fee2e2; color: #991b1b; }
+
+    .role-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+    .role-farmer { background: #dbeafe; color: #1e40af; }
+    .role-owner  { background: #d1fae5; color: #065f46; }
+    .role-driver { background: #ede9fe; color: #5b21b6; }
+
+    .action-btn { border: none; border-radius: 5px; padding: 4px 9px; font-size: 0.72rem; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; transition: all .2s; }
+    .btn-block    { background: #fee2e2; color: #991b1b; }
+    .btn-block:hover  { background: var(--red); color: white; }
+    .btn-unblock  { background: #d1fae5; color: #065f46; }
+    .btn-unblock:hover { background: #10b981; color: white; }
+    .btn-del { background: #fee2e2; color: #991b1b; }
+    .btn-del:hover { background: var(--red); color: white; }
+
+    .avatar-sm { width: 30px; height: 30px; border-radius: 50%; background: var(--green); color: var(--white); display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+
+    /* Empty */
+    .empty { text-align: center; padding: 36px; color: var(--muted); font-size: 0.85rem; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--green); color: var(--white); padding: 12px 20px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); transform: translateY(80px); opacity: 0; transition: all .3s; z-index: 999; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* Booking status filter tabs */
+    .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .filter-tab { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: var(--white); color: var(--muted); transition: all .2s; }
+    .filter-tab:hover  { border-color: var(--green); color: var(--green); }
+    .filter-tab.active { background: var(--green); color: var(--white); border-color: var(--green); }
+
+    @media (max-width: 1000px) { .stats-grid { grid-template-columns: repeat(2,1fr); } .charts-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 700px)  { .sidebar { display: none; } .main { margin-left: 0; } .stats-grid { grid-template-columns: repeat(2,1fr); } }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">🌾</div>
+    <div class="login-title">AgriShare Admin</div>
+    <div class="login-sub">Restricted access — Admins only</div>
+
+    <div class="login-field">
+      <label>Admin Email</label>
+      <input type="email" id="adminEmail" placeholder="admin@agrishare.com" />
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="adminPass" placeholder="••••••••" onkeydown="if(event.key==='Enter') adminLogin()" />
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="adminLogin()">🔐 Login to Admin Panel</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     DASHBOARD
+══════════════════════════════════ -->
+<div class="dashboard" id="dashboard">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-text">🌾 Agri<span>Share</span></div>
+      <div class="admin-badge">⚙️ ADMIN PANEL</div>
+    </div>
+    <div class="nav-section">Dashboard</div>
+    <button class="nav-item active" onclick="showPage('overview',this)"><span class="icon">📊</span> Overview</button>
+    <div class="nav-section">Manage</div>
+    <button class="nav-item" onclick="showPage('users',this)"><span class="icon">👥</span> Users <span class="nav-badge-count" id="usersBadge" style="display:none"></span></button>
+    <button class="nav-item" onclick="showPage('bookings',this)"><span class="icon">📅</span> Bookings <span class="nav-badge-count" id="bookingsBadge" style="display:none"></span></button>
+    <button class="nav-item" onclick="showPage('equipment',this)"><span class="icon">🚜</span> Equipment</button>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="adminLogout()">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left" id="topbarTitle">📊 Overview</div>
+      <div class="topbar-right">
+        <span class="topbar-time" id="topbarTime"></span>
+        <span>Admin</span>
+      </div>
+    </div>
+
+    <!-- ══ OVERVIEW PAGE ══ -->
+    <div class="page active" id="page-overview">
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon-wrap green">👥</div>
+          <div><div class="stat-num" id="sUsers">—</div><div class="stat-label">Total Users</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap orange">💰</div>
+          <div><div class="stat-num" id="sRevenue">—</div><div class="stat-label">Total Revenue</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap blue">📅</div>
+          <div><div class="stat-num" id="sBookings">—</div><div class="stat-label">Total Bookings</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap purple">🚜</div>
+          <div><div class="stat-num" id="sEquip">—</div><div class="stat-label">Equipment Listed</div></div>
+        </div>
+      </div>
+
+      <!-- Booking status row -->
+      <div class="stats-grid" style="margin-bottom:22px">
+        <div class="stat-card">
+          <div class="stat-icon-wrap orange">⏳</div>
+          <div><div class="stat-num" id="sPending">—</div><div class="stat-label">Pending</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap green">✅</div>
+          <div><div class="stat-num" id="sConfirmed">—</div><div class="stat-label">Confirmed</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap blue">🏁</div>
+          <div><div class="stat-num" id="sCompleted">—</div><div class="stat-label">Completed</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap red">❌</div>
+          <div><div class="stat-num" id="sCancelled">—</div><div class="stat-label">Cancelled</div></div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">📈 Monthly Bookings & Revenue <span class="chart-sub">Last 6 months</span></div>
+          <div class="bar-chart" id="barChart"><div class="empty">Loading chart...</div></div>
+          <div style="display:flex;gap:16px;margin-top:10px;font-size:0.72rem">
+            <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;border-radius:3px;background:var(--green)"></div> Bookings</div>
+            <div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;border-radius:3px;background:var(--accent);opacity:.8"></div> Revenue (₹00s)</div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">👥 User Roles</div>
+          <div class="donut-wrap">
+            <svg class="donut-svg" viewBox="0 0 42 42" id="donutSvg">
+              <circle cx="21" cy="21" r="15.91" fill="transparent" stroke="#f0f0f0" stroke-width="6"/>
+            </svg>
+            <div class="donut-legend" id="donutLegend"><div class="empty">Loading...</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end overview -->
+
+    <!-- ══ USERS PAGE ══ -->
+    <div class="page" id="page-users">
+      <div class="section-card">
+        <div class="section-header">
+          <h2>👥 All Users</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input class="search-input" type="text" placeholder="🔍 Search users..." oninput="filterUsers(this.value)" />
+            <select class="filter-select" onchange="filterUsersByRole(this.value)">
+              <option value="">All Roles</option>
+              <option value="farmer">Farmers</option>
+              <option value="owner">Owners</option>
+              <option value="driver">Drivers</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>User</th><th>Mobile</th><th>Role</th><th>Location</th><th>Equipment</th><th>Bookings</th><th>Joined</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="usersTable"><tr><td colspan="9" class="empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ BOOKINGS PAGE ══ -->
+    <div class="page" id="page-bookings">
+      <div class="section-card">
+        <div class="section-header">
+          <h2>📅 All Bookings</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <div class="filter-tabs" id="bookingFilterTabs">
+              <button class="filter-tab active" onclick="filterBookings('all',this)">All</button>
+              <button class="filter-tab" onclick="filterBookings('pending',this)">⏳ Pending</button>
+              <button class="filter-tab" onclick="filterBookings('confirmed',this)">✅ Confirmed</button>
+              <button class="filter-tab" onclick="filterBookings('completed',this)">🏁 Completed</button>
+              <button class="filter-tab" onclick="filterBookings('cancelled',this)">❌ Cancelled</button>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Equipment</th><th>Renter</th><th>Owner</th><th>Dates</th><th>Days</th><th>Amount</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="bookingsTable"><tr><td colspan="10" class="empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ EQUIPMENT PAGE ══ -->
+    <div class="page" id="page-equipment">
+      <div class="section-card">
+        <div class="section-header">
+          <h2>🚜 All Equipment</h2>
+          <input class="search-input" type="text" placeholder="🔍 Search equipment..." oninput="filterEquip(this.value)" />
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Equipment</th><th>Category</th><th>Owner</th><th>Location</th><th>Price/Day</th><th>Status</th><th>Listed On</th></tr></thead>
+            <tbody id="equipTable"><tr><td colspan="7" class="empty">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main -->
+</div><!-- end dashboard -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = 'http://localhost:5000';
+  let adminToken = localStorage.getItem('agriAdminToken');
+  let allUsers = [], allBookings = [], allEquip = [];
+
+  /* ── Check if already logged in ── */
+  if (adminToken) showDashboard();
+
+  /* ── Clock ── */
+  setInterval(() => {
+    document.getElementById('topbarTime').textContent =
+      new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
+  }, 1000);
+
+  /* ══════════════════════
+     ADMIN LOGIN
+  ══════════════════════ */
+  async function adminLogin() {
+    const email    = document.getElementById('adminEmail').value.trim();
+    const password = document.getElementById('adminPass').value;
+    const btn      = document.getElementById('loginBtn');
+    const errEl    = document.getElementById('loginError');
+
+    if (!email || !password) { errEl.textContent = '⚠️ Enter email and password'; errEl.style.display = 'block'; return; }
+
+    btn.disabled = true; btn.textContent = 'Logging in...';
+
+    try {
+      const res  = await fetch(`${API}/api/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        adminToken = json.token;
+        localStorage.setItem('agriAdminToken', adminToken);
+        showDashboard();
+      } else {
+        errEl.textContent   = '❌ ' + json.message;
+        errEl.style.display = 'block';
+        btn.disabled = false; btn.textContent = '🔐 Login to Admin Panel';
+      }
+    } catch {
+      errEl.textContent   = '❌ Server se connect nahi ho paya';
+      errEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = '🔐 Login to Admin Panel';
+    }
+  }
+
+  function showDashboard() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').classList.add('show');
+    loadOverview();
+    loadUsers();
+    loadBookings();
+    loadEquipment();
+  }
+
+  function adminLogout() {
+    localStorage.removeItem('agriAdminToken');
+    location.reload();
+  }
+
+  function auth() { return { 'Authorization': `Bearer ${adminToken}` }; }
+
+  /* ══════════════════════
+     PAGE NAVIGATION
+  ══════════════════════ */
+  function showPage(name, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`page-${name}`).classList.add('active');
+    if (el) el.classList.add('active');
+    const titles = { overview:'📊 Overview', users:'👥 All Users', bookings:'📅 All Bookings', equipment:'🚜 All Equipment' };
+    document.getElementById('topbarTitle').textContent = titles[name] || name;
+  }
+
+  function toast(msg, ok=true) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.background = ok ? 'var(--green)' : 'var(--red)';
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  function statusBadge(s) {
+    const map = {pending:'⏳ Pending',confirmed:'✅ Confirmed',completed:'🏁 Completed',cancelled:'❌ Cancelled'};
+    return `<span class="status-badge status-${s}">${map[s]||s}</span>`;
+  }
+
+  /* ══════════════════════
+     OVERVIEW — Stats + Charts
+  ══════════════════════ */
+  async function loadOverview() {
+    try {
+      const res  = await fetch(`${API}/api/admin/stats`, { headers: auth() });
+      const json = await res.json();
+      if (!json.success) return;
+
+      const s = json.stats;
+      document.getElementById('sUsers').textContent    = s.users;
+      document.getElementById('sRevenue').textContent  = `₹${parseFloat(s.revenue).toLocaleString('en-IN')}`;
+      document.getElementById('sBookings').textContent = s.bookings;
+      document.getElementById('sEquip').textContent    = s.equipment;
+      document.getElementById('sPending').textContent   = s.pending;
+      document.getElementById('sConfirmed').textContent = s.confirmed;
+      document.getElementById('sCompleted').textContent = s.completed;
+      document.getElementById('sCancelled').textContent = s.cancelled;
+
+      /* Badges */
+      if (s.pending > 0) {
+        const b = document.getElementById('bookingsBadge');
+        b.textContent = s.pending; b.style.display = '';
+      }
+
+      /* Bar chart */
+      renderBarChart(json.monthly || []);
+
+      /* Donut chart */
+      renderDonut(json.roles || []);
+
+    } catch(err) { console.error(err); }
+  }
+
+  function renderBarChart(data) {
+    const el = document.getElementById('barChart');
+    if (!data.length) { el.innerHTML = '<div class="empty">No data yet</div>'; return; }
+
+    const maxB = Math.max(...data.map(d=>d.bookings), 1);
+    const maxR = Math.max(...data.map(d=>parseFloat(d.revenue||0)/100), 1);
+
+    el.innerHTML = data.map(d => {
+      const bH = Math.max(4, (d.bookings / maxB) * 120);
+      const rH = Math.max(4, (parseFloat(d.revenue||0)/100 / maxR) * 120);
+      return `<div class="bar-group">
+        <div class="bar-wrap">
+          <div class="bar bookings" style="height:${bH}px" title="${d.bookings} bookings"></div>
+          <div class="bar revenue"  style="height:${rH}px" title="₹${parseFloat(d.revenue||0).toLocaleString('en-IN')}"></div>
+        </div>
+        <div class="bar-label">${d.month}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderDonut(roles) {
+    const colors = { farmer:'#3b82f6', owner:'#10b981', driver:'#7c3aed', admin:'#f5a623' };
+    const total  = roles.reduce((s,r)=>s+r.count, 0) || 1;
+    const svg    = document.getElementById('donutSvg');
+    const legend = document.getElementById('donutLegend');
+
+    let offset = 25; // start from top
+    const circumference = 2 * Math.PI * 15.91;
+    let circles = `<circle cx="21" cy="21" r="15.91" fill="transparent" stroke="#f0f0f0" stroke-width="6"/>`;
+
+    roles.forEach(r => {
+      const pct  = r.count / total;
+      const dash = pct * circumference;
+      const gap  = circumference - dash;
+      const col  = colors[r.role] || '#9ca3af';
+      circles += `<circle cx="21" cy="21" r="15.91" fill="transparent"
+        stroke="${col}" stroke-width="6"
+        stroke-dasharray="${dash} ${gap}"
+        stroke-dashoffset="${circumference - offset * circumference / 100}"
+        transform="rotate(-90 21 21)" />`;
+      offset += pct * 100;
+    });
+
+    circles += `<text x="21" y="24" text-anchor="middle" font-size="6" font-weight="bold" fill="#1a1a1a">${total}</text>`;
+    svg.innerHTML = circles;
+
+    legend.innerHTML = roles.map(r => `
+      <div class="legend-item">
+        <div class="legend-label">
+          <div class="legend-dot" style="background:${colors[r.role]||'#9ca3af'}"></div>
+          <span>${r.role.charAt(0).toUpperCase()+r.role.slice(1)}s</span>
+        </div>
+        <span class="legend-val">${r.count} <span style="color:var(--muted);font-weight:400">(${Math.round(r.count/total*100)}%)</span></span>
+      </div>`).join('');
+  }
+
+  /* ══════════════════════
+     USERS
+  ══════════════════════ */
+  async function loadUsers() {
+    try {
+      const res  = await fetch(`${API}/api/admin/users`, { headers: auth() });
+      const json = await res.json();
+      allUsers = json.data || [];
+      document.getElementById('usersBadge').textContent = allUsers.length;
+      document.getElementById('usersBadge').style.display = '';
+      renderUsers(allUsers);
+    } catch(err) { document.getElementById('usersTable').innerHTML = `<tr><td colspan="9" style="color:var(--red);text-align:center;padding:20px">${err.message}</td></tr>`; }
+  }
+
+  function renderUsers(users) {
+    const tb = document.getElementById('usersTable');
+    if (!users.length) { tb.innerHTML = `<tr><td colspan="9" class="empty">No users found</td></tr>`; return; }
+
+    tb.innerHTML = users.map(u => `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="avatar-sm">${(u.full_name||'U')[0].toUpperCase()}</div>
+          <div>
+            <div style="font-weight:600">${u.full_name}</div>
+            <div style="font-size:0.72rem;color:var(--muted)">${u.email}</div>
+          </div>
+        </div>
+      </td>
+      <td>${u.mobile||'—'}</td>
+      <td><span class="role-badge role-${u.role}">${u.role}</span></td>
+      <td style="font-size:0.78rem">${u.location||'—'}</td>
+      <td style="text-align:center">${u.equipment_count||0}</td>
+      <td style="text-align:center">${u.booking_count||0}</td>
+      <td style="font-size:0.75rem">${new Date(u.created_at).toLocaleDateString('en-IN')}</td>
+      <td><span class="status-badge ${u.is_active!==0?'status-active':'status-cancelled'}">${u.is_active!==0?'✅ Active':'🚫 Blocked'}</span></td>
+      <td>
+        <button class="action-btn ${u.is_active!==0?'btn-block':'btn-unblock'}"
+          onclick="toggleUser(${u.id}, ${u.is_active})">
+          ${u.is_active!==0?'🚫 Block':'✅ Unblock'}
+        </button>
+      </td>
+    </tr>`).join('');
+  }
+
+  function filterUsers(query) {
+    const q = query.toLowerCase();
+    renderUsers(allUsers.filter(u =>
+      u.full_name.toLowerCase().includes(q) ||
+      u.email.toLowerCase().includes(q) ||
+      (u.mobile||'').includes(q)
+    ));
+  }
+
+  function filterUsersByRole(role) {
+    renderUsers(role ? allUsers.filter(u=>u.role===role) : allUsers);
+  }
+
+  async function toggleUser(id, current) {
+    const action = current !== 0 ? 'block' : 'unblock';
+    if (!confirm(`Are you sure you want to ${action} this user?`)) return;
+    try {
+      const res  = await fetch(`${API}/api/admin/users/${id}/toggle`, { method:'PATCH', headers:auth() });
+      const json = await res.json();
+      if (json.success) { toast(`✅ User ${action}ed!`); loadUsers(); }
+      else toast('⚠️ '+json.message, false);
+    } catch { toast('❌ Server error', false); }
+  }
+
+  /* ══════════════════════
+     BOOKINGS
+  ══════════════════════ */
+  async function loadBookings() {
+    try {
+      const res  = await fetch(`${API}/api/admin/bookings`, { headers: auth() });
+      const json = await res.json();
+      allBookings = json.data || [];
+      renderBookings(allBookings);
+    } catch(err) { document.getElementById('bookingsTable').innerHTML = `<tr><td colspan="10" style="color:var(--red);text-align:center;padding:20px">${err.message}</td></tr>`; }
+  }
+
+  function renderBookings(bookings) {
+    const tb = document.getElementById('bookingsTable');
+    if (!bookings.length) { tb.innerHTML = `<tr><td colspan="10" class="empty">No bookings found</td></tr>`; return; }
+
+    tb.innerHTML = bookings.map(b => `<tr>
+      <td style="font-weight:700;color:var(--green)">#${b.id}</td>
+      <td>
+        <div style="font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.equipment_title||'—'}</div>
+        <div style="font-size:0.7rem;color:var(--muted)">${b.equipment_category||''}</div>
+      </td>
+      <td>
+        <div style="font-weight:500">${b.renter_name||'—'}</div>
+        <div style="font-size:0.7rem;color:var(--muted)">${b.renter_mobile||''}</div>
+      </td>
+      <td style="font-size:0.78rem">${b.owner_name||'—'}</td>
+      <td style="font-size:0.75rem">${b.start_date}<br>${b.end_date}</td>
+      <td style="text-align:center">${b.total_days}</td>
+      <td style="font-weight:700;color:var(--green)">₹${parseFloat(b.total_amount||0).toLocaleString('en-IN')}</td>
+      <td><span style="text-transform:uppercase;font-size:0.72rem;font-weight:600">${b.payment_method||'—'}</span></td>
+      <td>${statusBadge(b.status)}</td>
+      <td><button class="action-btn btn-del" onclick="deleteBooking(${b.id})">🗑️ Delete</button></td>
+    </tr>`).join('');
+  }
+
+  function filterBookings(status, el) {
+    document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+    renderBookings(status==='all' ? allBookings : allBookings.filter(b=>b.status===status));
+  }
+
+  async function deleteBooking(id) {
+    if (!confirm('Delete this booking permanently? This cannot be undone.')) return;
+    try {
+      const res  = await fetch(`${API}/api/admin/bookings/${id}`, { method:'DELETE', headers:auth() });
+      const json = await res.json();
+      if (json.success) { toast('🗑️ Booking deleted'); loadBookings(); loadOverview(); }
+      else toast('⚠️ '+json.message, false);
+    } catch { toast('❌ Server error', false); }
+  }
+
+  /* ══════════════════════
+     EQUIPMENT
+  ══════════════════════ */
+  async function loadEquipment() {
+    try {
+      const res  = await fetch(`${API}/api/admin/equipment`, { headers: auth() });
+      const json = await res.json();
+      allEquip = json.data || [];
+      renderEquip(allEquip);
+    } catch(err) { document.getElementById('equipTable').innerHTML = `<tr><td colspan="7" style="color:var(--red);text-align:center;padding:20px">${err.message}</td></tr>`; }
+  }
+
+  function renderEquip(items) {
+    const tb = document.getElementById('equipTable');
+    if (!items.length) { tb.innerHTML = `<tr><td colspan="7" class="empty">No equipment found</td></tr>`; return; }
+    const catEmoji = {tractor:'🚜',rotavator:'⚙️',sprayer:'💧',harvester:'🌾',vehicle:'🚐',other:'🔧'};
+    tb.innerHTML = items.map(e=>`<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:1.4rem">${catEmoji[e.category]||'🔧'}</div>
+          <div>
+            <div style="font-weight:600">${e.title}</div>
+            <div style="font-size:0.7rem;color:var(--muted)">#${e.id}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="role-badge role-farmer" style="background:#f3f4f6;color:var(--text)">${e.category}</span></td>
+      <td>
+        <div style="font-weight:500">${e.owner_name||'—'}</div>
+        <div style="font-size:0.7rem;color:var(--muted)">${e.owner_mobile||''}</div>
+      </td>
+      <td style="font-size:0.78rem">${e.location||'—'}</td>
+      <td style="font-weight:700;color:var(--green)">₹${parseFloat(e.price_per_day).toLocaleString('en-IN')}</td>
+      <td><span class="status-badge ${e.is_available?'status-active':'status-cancelled'}">${e.is_available?'✅ Available':'🔴 Hidden'}</span></td>
+      <td style="font-size:0.75rem">${new Date(e.created_at).toLocaleDateString('en-IN')}</td>
+    </tr>`).join('');
+  }
+
+  function filterEquip(query) {
+    const q = query.toLowerCase();
+    renderEquip(allEquip.filter(e=>
+      e.title.toLowerCase().includes(q) ||
+      e.category.toLowerCase().includes(q) ||
+      (e.location||'').toLowerCase().includes(q)
+    ));
+  }
+</script>
+
+<style>
+.chat-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.chat-fab-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0B3D2E 0%, #1e7a52 100%);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 20px rgba(11,61,46,0.4);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  animation: fabPulse 3s infinite;
+}
+
+.chat-fab-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 28px rgba(11,61,46,0.5);
+}
+
+@keyframes fabPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(11,61,46,0.4); }
+  50%       { box-shadow: 0 4px 28px rgba(11,61,46,0.7), 0 0 0 8px rgba(11,61,46,0.1); }
+}
+
+.chat-fab-tooltip {
+  background: #0B3D2E;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-family: 'Poppins', sans-serif;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.chat-fab:hover .chat-fab-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.chat-fab-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  background: #f5a623;
+  border-radius: 50%;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #0B3D2E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  animation: badgeBounce 1s ease infinite;
+}
+
+@keyframes badgeBounce {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.2); }
+}
+</style>
+
+<div class="chat-fab">
+  <div class="chat-fab-tooltip">🌾 Kisan Mitra AI</div>
+  <a href="chatbot.html" class="chat-fab-btn" title="AI Assistant">
+    🌾
+    <span class="chat-fab-badge">AI</span>
+  </a>
+</div>
+</body>
+</html>

@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — AgriShare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --green:       #0B3D2E;
+      --green-mid:   #145a3c;
+      --green-light: #1e7a52;
+      --accent:      #f5a623;
+      --beige:       #F5F1E8;
+      --beige2:      #ede8da;
+      --text:        #1a1a1a;
+      --muted:       #6b7280;
+      --border:      #d1d5db;
+      --white:       #ffffff;
+      --red:         #e53e3e;
+      --blue:        #3b82f6;
+      --shadow:      0 2px 12px rgba(11,61,46,0.10);
+      --radius:      10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: var(--beige); color: var(--text); min-height: 100vh; }
+    .app { display: flex; min-height: 100vh; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 240px; min-width: 240px;
+      background: var(--green);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0;
+      height: 100vh; z-index: 100;
+      transition: transform .3s;
+    }
+    .sidebar-logo { padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 1.2rem; font-weight: 700; color: var(--white); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .sidebar-logo span { color: var(--accent); }
+    .user-pill { margin: 14px 12px; background: rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; display: flex; align-items: center; gap: 10px; }
+    .user-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--accent); color: var(--green); font-weight: 700; font-size: 1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .user-name { font-size: 0.85rem; font-weight: 600; color: var(--white); }
+    .user-role { font-size: 0.72rem; color: rgba(255,255,255,0.6); text-transform: capitalize; }
+    .nav-section { padding: 8px 12px 4px; font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 1px; text-transform: uppercase; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; margin: 2px 8px; border-radius: 8px; cursor: pointer; color: rgba(255,255,255,0.75); font-size: 0.88rem; font-weight: 500; text-decoration: none; transition: all .2s; border: none; background: none; width: calc(100% - 16px); text-align: left; font-family: 'Poppins', sans-serif; }
+    .nav-item:hover  { background: rgba(255,255,255,0.08); color: var(--white); }
+    .nav-item.active { background: rgba(255,255,255,0.15); color: var(--white); font-weight: 600; }
+    .nav-item .icon  { font-size: 1.05rem; width: 20px; flex-shrink: 0; }
+    .nav-badge { margin-left: auto; background: var(--accent); color: var(--green); font-size: 0.65rem; font-weight: 700; padding: 1px 7px; border-radius: 20px; }
+    .sidebar-footer { margin-top: auto; padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .logout-btn { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.6); font-size: 0.85rem; cursor: pointer; background: none; border: none; font-family: 'Poppins', sans-serif; padding: 8px 4px; transition: color .2s; width: 100%; }
+    .logout-btn:hover { color: var(--white); }
+
+    /* ── MAIN ── */
+    .content { margin-left: 240px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+    .topbar { background: var(--white); border-bottom: 1.5px solid var(--border); padding: 0 24px; height: 58px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .topbar-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .topbar-btn { background: var(--green); color: var(--white); border: none; border-radius: 7px; padding: 7px 16px; font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; text-decoration: none; display: flex; align-items: center; gap: 5px; transition: background .2s; }
+    .topbar-btn:hover { background: var(--green-light); }
+    .hamburger { display: none; background: none; border: none; cursor: pointer; font-size: 1.3rem; }
+
+    .page { padding: 24px; display: none; }
+    .page.active { display: block; }
+
+    /* ── STATS ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--border); padding: 18px; display: flex; align-items: center; gap: 14px; }
+    .stat-icon { font-size: 2rem; }
+    .stat-num  { font-size: 1.5rem; font-weight: 700; color: var(--green); line-height: 1; }
+    .stat-label{ font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── SECTION CARD ── */
+    .section-card { background: var(--white); border-radius: var(--radius); border: 1.5px solid var(--border); overflow: hidden; margin-bottom: 20px; }
+    .section-header { padding: 14px 20px; border-bottom: 1.5px solid var(--beige2); display: flex; justify-content: space-between; align-items: center; }
+    .section-header h2 { font-size: 0.95rem; font-weight: 700; }
+    .section-link { font-size: 0.8rem; color: var(--green-light); text-decoration: none; font-weight: 600; background: none; border: none; cursor: pointer; font-family: 'Poppins', sans-serif; }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: 10px 16px; text-align: left; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; background: var(--beige); border-bottom: 1.5px solid var(--border); }
+    td { padding: 12px 16px; font-size: 0.83rem; border-bottom: 1px solid var(--beige2); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafaf8; }
+
+    .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+    .status-pending   { background: #fef3c7; color: #92400e; }
+    .status-confirmed { background: #d1fae5; color: #065f46; }
+    .status-completed { background: #dbeafe; color: #1e40af; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    .status-active    { background: #ede9fe; color: #5b21b6; }
+
+    .action-btn { border: none; border-radius: 5px; padding: 4px 10px; font-size: 0.75rem; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; transition: all .2s; margin-right: 4px; }
+    .btn-confirm  { background: #d1fae5; color: #065f46; }
+    .btn-confirm:hover  { background: #10b981; color: white; }
+    .btn-cancel   { background: #fee2e2; color: #991b1b; }
+    .btn-cancel:hover   { background: var(--red); color: white; }
+    .btn-complete { background: #dbeafe; color: #1e40af; }
+    .btn-complete:hover { background: var(--blue); color: white; }
+    .btn-review   { background: #fef3c7; color: #92400e; }
+    .btn-review:hover   { background: var(--accent); color: var(--green); }
+
+    /* ── EQUIPMENT LIST ITEMS ── */
+    .equip-list-item { display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--beige2); transition: background .15s; }
+    .equip-list-item:last-child { border-bottom: none; }
+    .equip-list-item:hover { background: #fafaf8; }
+    .equip-thumb { width: 54px; height: 54px; border-radius: 8px; background: var(--beige2); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; overflow: hidden; }
+    .equip-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .equip-item-info { flex: 1; }
+    .equip-item-title { font-size: 0.88rem; font-weight: 600; }
+    .equip-item-meta  { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .equip-item-price { font-size: 0.88rem; font-weight: 700; color: var(--green); white-space: nowrap; }
+    .equip-item-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+    .btn-icon { background: none; border: 1.5px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 0.75rem; cursor: pointer; transition: all .2s; font-family: 'Poppins', sans-serif; text-decoration: none; color: var(--text); }
+    .btn-icon:hover { border-color: var(--green); color: var(--green); }
+    .toggle-avail { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600; padding: 5px 10px; border-radius: 6px; border: 1.5px solid var(--border); cursor: pointer; background: none; font-family: 'Poppins', sans-serif; transition: all .2s; }
+
+    /* ── EMPTY ── */
+    .empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+    .empty .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty p { font-size: 0.88rem; margin-bottom: 14px; }
+    .empty-btn { display: inline-block; background: var(--green); color: var(--white); border-radius: 8px; padding: 9px 20px; font-size: 0.85rem; font-weight: 600; text-decoration: none; }
+
+    /* ── PROFILE ── */
+    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .profile-field { display: flex; flex-direction: column; gap: 5px; }
+    .profile-field label { font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .profile-field input, .profile-field select { border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 13px; font-size: 0.88rem; font-family: 'Poppins', sans-serif; outline: none; transition: border-color .2s; }
+    .profile-field input:focus, .profile-field select:focus { border-color: var(--green-light); }
+    .profile-save { background: var(--green); color: var(--white); border: none; border-radius: 8px; padding: 10px 24px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: 'Poppins', sans-serif; margin-top: 16px; transition: background .2s; }
+    .profile-save:hover { background: var(--green-light); }
+
+    /* ── REVIEW MODAL ── */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: var(--white); border-radius: 14px; padding: 28px; max-width: 440px; width: 100%; }
+    .modal h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; }
+    .star-select { display: flex; gap: 8px; margin-bottom: 14px; }
+    .star-btn { font-size: 1.8rem; cursor: pointer; opacity: 0.3; transition: opacity .2s; background: none; border: none; }
+    .star-btn.active { opacity: 1; }
+    .modal textarea { width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 0.88rem; font-family: 'Poppins', sans-serif; outline: none; resize: vertical; min-height: 80px; margin-bottom: 14px; }
+    .modal-btns { display: flex; gap: 10px; }
+    .modal-btn { flex: 1; padding: 10px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; border: none; }
+    .modal-btn.primary   { background: var(--green); color: var(--white); }
+    .modal-btn.secondary { background: var(--beige2); color: var(--text); }
+
+    /* ── TOAST ── */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--green); color: var(--white); padding: 12px 20px; border-radius: 8px; font-size: 0.88rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); transform: translateY(80px); opacity: 0; transition: all .3s; z-index: 998; max-width: 300px; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 700px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .content { margin-left: 0; }
+      .hamburger { display: block; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .profile-grid { grid-template-columns: 1fr; }
+      .page { padding: 14px; }
+    }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+    .sidebar-overlay.show { display: block; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <a href="index.html" class="sidebar-logo">🌾 Agri<span>Share</span></a>
+    <div class="user-pill">
+      <div class="user-avatar" id="sidebarAvatar">?</div>
+      <div>
+        <div class="user-name" id="sidebarName">Loading...</div>
+        <div class="user-role" id="sidebarRole">—</div>
+      </div>
+    </div>
+    <div class="nav-section">Main</div>
+    <button class="nav-item active" onclick="showPage('overview',this)"><span class="icon">🏠</span> Overview</button>
+    <a href="equipment.html" class="nav-item"><span class="icon">🔍</span> Browse Equipment</a>
+    <div class="nav-section">Farmer</div>
+    <button class="nav-item" onclick="showPage('myBookings',this)"><span class="icon">📅</span> My Bookings <span class="nav-badge" id="bookingsBadge" style="display:none">0</span></button>
+    <div class="nav-section" id="ownerNav" style="display:none">Owner</div>
+    <button class="nav-item" id="myEquipNav"  style="display:none" onclick="showPage('myEquip',this)"><span class="icon">🚜</span> My Equipment</button>
+    <button class="nav-item" id="incomingNav" style="display:none" onclick="showPage('incoming',this)"><span class="icon">📬</span> Incoming <span class="nav-badge" id="incomingBadge" style="display:none">0</span></button>
+    <div class="nav-section">Account</div>
+    <button class="nav-item" onclick="showPage('profile',this)"><span class="icon">👤</span> Profile</button>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+        <span class="topbar-title" id="topbarTitle">Dashboard</span>
+      </div>
+      <div class="topbar-right">
+        <a href="equipment.html" class="topbar-btn">🔍 Browse</a>
+        <a href="add-equipment.html" class="topbar-btn" id="addEquipBtn" style="display:none">+ List Equipment</a>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="page active" id="page-overview">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon">📅</div><div><div class="stat-num" id="statBookings">—</div><div class="stat-label">My Bookings</div></div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div><div class="stat-num" id="statCompleted">—</div><div class="stat-label">Completed</div></div></div>
+        <div class="stat-card" id="statEquipCard" style="display:none"><div class="stat-icon">🚜</div><div><div class="stat-num" id="statEquip">—</div><div class="stat-label">My Equipment</div></div></div>
+        <div class="stat-card" id="statEarnCard"  style="display:none"><div class="stat-icon">💰</div><div><div class="stat-num" id="statEarn">—</div><div class="stat-label">Earnings</div></div></div>
+        <div class="stat-card"><div class="stat-icon">⏳</div><div><div class="stat-num" id="statPending">—</div><div class="stat-label">Pending</div></div></div>
+      </div>
+      <div class="section-card">
+        <div class="section-header"><h2>📅 Recent Bookings</h2><button class="section-link" onclick="showPage('myBookings',null)">View All →</button></div>
+        <div id="recentBookings"><div class="empty"><div class="empty-icon">⏳</div><p>Loading...</p></div></div>
+      </div>
+      <div class="section-card" id="recentEquipSection" style="display:none">
+        <div class="section-header"><h2>🚜 My Equipment</h2><a class="section-link" href="add-equipment.html">+ Add New →</a></div>
+        <div id="recentEquip"><div class="empty"><div class="empty-icon">⏳</div><p>Loading...</p></div></div>
+      </div>
+    </div>
+
+    <!-- MY BOOKINGS -->
+    <div class="page" id="page-myBookings">
+      <div class="section-card">
+        <div class="section-header"><h2>📅 My Bookings</h2><a href="equipment.html" class="section-link">+ Book Equipment</a></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Equipment</th><th>Dates</th><th>Days</th><th>Amount</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="myBookingsTable"><tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted)">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY EQUIPMENT -->
+    <div class="page" id="page-myEquip">
+      <div class="section-card">
+        <div class="section-header"><h2>🚜 My Equipment</h2><a href="add-equipment.html" class="section-link">+ Add New</a></div>
+        <div id="myEquipList"><div class="empty"><div class="empty-icon">⏳</div><p>Loading...</p></div></div>
+      </div>
+    </div>
+
+    <!-- INCOMING BOOKINGS -->
+    <div class="page" id="page-incoming">
+      <div class="section-card">
+        <div class="section-header"><h2>📬 Incoming Booking Requests</h2></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Equipment</th><th>Renter</th><th>Dates</th><th>Amount</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="incomingTable"><tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted)">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="page" id="page-profile">
+      <div class="section-card">
+        <div class="section-header"><h2>👤 My Profile</h2></div>
+        <div style="padding:20px">
+          <div class="profile-grid">
+            <div class="profile-field"><label>Full Name</label><input type="text" id="profName" /></div>
+            <div class="profile-field"><label>Mobile</label><input type="text" id="profMobile" disabled style="background:var(--beige);color:var(--muted)" /></div>
+            <div class="profile-field"><label>Email</label><input type="text" id="profEmail" disabled style="background:var(--beige);color:var(--muted)" /></div>
+            <div class="profile-field"><label>Role</label><input type="text" id="profRole" disabled style="background:var(--beige);color:var(--muted)" /></div>
+            <div class="profile-field"><label>Village / Location</label><input type="text" id="profLocation" /></div>
+            <div class="profile-field">
+              <label>Language</label>
+              <select id="profLang">
+                <option value="en">English</option><option value="hi">हिंदी</option>
+                <option value="gu">ગુજરાતી</option><option value="bh">भोजपुरी</option>
+                <option value="bn">বাংলা</option><option value="mr">मराठी</option>
+                <option value="hr">हरियाणवी</option><option value="uk">गढ़वाली</option>
+              </select>
+            </div>
+          </div>
+          <div id="profileAlert" style="margin-top:12px;display:none;padding:10px 14px;border-radius:8px;font-size:0.85rem"></div>
+          <button class="profile-save" onclick="saveProfile()">💾 Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</div><!-- end app -->
+
+<!-- REVIEW MODAL -->
+<div class="modal-overlay" id="reviewModal">
+  <div class="modal">
+    <h2>⭐ Write a Review</h2>
+    <div class="star-select">
+      <button class="star-btn" onclick="setStar(1)">★</button>
+      <button class="star-btn" onclick="setStar(2)">★</button>
+      <button class="star-btn" onclick="setStar(3)">★</button>
+      <button class="star-btn" onclick="setStar(4)">★</button>
+      <button class="star-btn" onclick="setStar(5)">★</button>
+    </div>
+    <textarea id="reviewComment" placeholder="Share your experience..."></textarea>
+    <input type="hidden" id="reviewBookingId" />
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="closeReview()">Cancel</button>
+      <button class="modal-btn primary"   onclick="submitReview()">Submit</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API   = 'http://localhost:5000';
+  const token = localStorage.getItem('agriToken');
+  const user  = JSON.parse(localStorage.getItem('agriShareCurrentUser') || 'null');
+
+  if (!token || !user) { location.href = 'login.html'; }
+
+  /* ── Init sidebar ── */
+  document.getElementById('sidebarAvatar').textContent = (user?.full_name||user?.fullName||'U')[0].toUpperCase();
+  document.getElementById('sidebarName').textContent   = user?.full_name || user?.fullName || 'User';
+  document.getElementById('sidebarRole').textContent   = user?.role || 'farmer';
+
+  if (user?.role === 'owner') {
+    ['ownerNav','myEquipNav','incomingNav'].forEach(id => document.getElementById(id).style.display = '');
+    document.getElementById('addEquipBtn').style.display     = '';
+    document.getElementById('statEquipCard').style.display   = '';
+    document.getElementById('statEarnCard').style.display    = '';
+    document.getElementById('recentEquipSection').style.display = '';
+  }
+
+  /* ── Page switch ── */
+  function showPage(name, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`page-${name}`).classList.add('active');
+    if (el) el.classList.add('active');
+    const titles = {overview:'Dashboard',myBookings:'My Bookings',myEquip:'My Equipment',incoming:'Incoming Bookings',profile:'Profile'};
+    document.getElementById('topbarTitle').textContent = titles[name] || 'Dashboard';
+    if (name==='myBookings') loadMyBookings();
+    if (name==='myEquip')    loadMyEquip();
+    if (name==='incoming')   loadIncoming();
+    if (name==='profile')    loadProfile();
+    if (window.innerWidth < 700) toggleSidebar();
+  }
+
+  function auth() { return { 'Authorization': `Bearer ${token}` }; }
+
+  function toast(msg, ok=true) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.background = ok ? 'var(--green)' : 'var(--red)';
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  function statusBadge(s) {
+    const map = {pending:'⏳ Pending',confirmed:'✅ Confirmed',active:'🔄 Active',completed:'🏁 Completed',cancelled:'❌ Cancelled'};
+    return `<span class="status-badge status-${s}">${map[s]||s}</span>`;
+  }
+
+  /* ── OVERVIEW ── */
+  async function loadOverview() {
+    try {
+      const r1  = await fetch(`${API}/api/bookings/my`, { headers: auth() });
+      const j1  = await r1.json();
+      const bks = j1.data || [];
+
+      document.getElementById('statBookings').textContent  = bks.length;
+      document.getElementById('statCompleted').textContent = bks.filter(b=>b.status==='completed').length;
+      document.getElementById('statPending').textContent   = bks.filter(b=>b.status==='pending').length;
+
+      const pCount = bks.filter(b=>b.status==='pending').length;
+      if (pCount > 0) { const b = document.getElementById('bookingsBadge'); b.textContent = pCount; b.style.display = ''; }
+
+      const rb = document.getElementById('recentBookings');
+      if (!bks.length) {
+        rb.innerHTML = `<div class="empty"><div class="empty-icon">📅</div><p>No bookings yet</p><a href="equipment.html" class="empty-btn">Browse Equipment</a></div>`;
+      } else {
+        rb.innerHTML = `<div class="table-wrap"><table>
+          <thead><tr><th>Equipment</th><th>Dates</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>${bks.slice(0,5).map(b=>`<tr>
+            <td><strong>${b.equipment_title||'—'}</strong></td>
+            <td style="font-size:0.78rem">${b.start_date} → ${b.end_date}</td>
+            <td style="font-weight:700;color:var(--green)">₹${parseFloat(b.total_amount||0).toLocaleString('en-IN')}</td>
+            <td>${statusBadge(b.status)}</td>
+          </tr>`).join('')}</tbody></table></div>`;
+      }
+
+      if (user?.role === 'owner') {
+        const r2  = await fetch(`${API}/api/bookings/incoming`, { headers: auth() });
+        const j2  = await r2.json();
+        const inc = j2.data || [];
+        const earn = inc.filter(b=>b.status==='completed').reduce((s,b)=>s+parseFloat(b.total_amount||0),0);
+        document.getElementById('statEarn').textContent = `₹${earn.toLocaleString('en-IN')}`;
+
+        const iCount = inc.filter(b=>b.status==='pending').length;
+        if (iCount > 0) { const ib = document.getElementById('incomingBadge'); ib.textContent = iCount; ib.style.display = ''; }
+
+        const r3  = await fetch(`${API}/api/equipment?limit=100&available=`, { headers: auth() });
+        const j3  = await r3.json();
+        const myEq = (j3.data||[]).filter(e=>e.owner_id===user.id);
+        document.getElementById('statEquip').textContent = myEq.length;
+
+        const re = document.getElementById('recentEquip');
+        if (!myEq.length) {
+          re.innerHTML = `<div class="empty"><div class="empty-icon">🚜</div><p>No equipment listed</p><a href="add-equipment.html" class="empty-btn">+ List Equipment</a></div>`;
+        } else {
+          re.innerHTML = myEq.slice(0,3).map(equipItem).join('');
+        }
+      }
+    } catch(err) { console.error(err); }
+  }
+
+  /* ── MY BOOKINGS ── */
+  async function loadMyBookings() {
+    const tb = document.getElementById('myBookingsTable');
+    tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted)">Loading...</td></tr>`;
+    try {
+      const res  = await fetch(`${API}/api/bookings/my`, { headers: auth() });
+      const json = await res.json();
+      const bks  = json.data || [];
+      if (!bks.length) {
+        tb.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">📅</div><p>No bookings yet</p><a href="equipment.html" class="empty-btn">Browse Equipment</a></div></td></tr>`;
+        return;
+      }
+      tb.innerHTML = bks.map(b=>`<tr>
+        <td><strong>${b.equipment_title||'—'}</strong><br><span style="font-size:0.72rem;color:var(--muted)">${b.equipment_category||''}</span></td>
+        <td style="font-size:0.78rem">${b.start_date}<br>${b.end_date}</td>
+        <td>${b.total_days} day${b.total_days>1?'s':''}</td>
+        <td style="font-weight:700;color:var(--green)">₹${parseFloat(b.total_amount||0).toLocaleString('en-IN')}</td>
+        <td>${b.payment_method?.toUpperCase()||'—'}</td>
+        <td>${statusBadge(b.status)}</td>
+        <td>
+          ${b.status==='pending'   ? `<button class="action-btn btn-cancel"  onclick="updateStatus(${b.id},'cancelled','myBookings')">Cancel</button>` : ''}
+          ${b.status==='completed' ? `<button class="action-btn btn-review"  onclick="openReview(${b.id})">⭐ Review</button>` : ''}
+          ${b.status==='confirmed' ? `<span style="font-size:0.75rem;color:var(--muted)">Awaiting start</span>` : ''}
+          ${b.status==='cancelled' ? `<span style="font-size:0.75rem;color:var(--muted)">Cancelled</span>` : ''}
+        </td>
+      </tr>`).join('');
+    } catch(err) { tb.innerHTML = `<tr><td colspan="7" style="color:var(--red);text-align:center;padding:20px">${err.message}</td></tr>`; }
+  }
+
+  /* ── MY EQUIPMENT ── */
+  async function loadMyEquip() {
+    const el = document.getElementById('myEquipList');
+    el.innerHTML = `<div class="empty"><div class="empty-icon">⏳</div><p>Loading...</p></div>`;
+    try {
+      const res  = await fetch(`${API}/api/equipment?limit=50&available=`, { headers: auth() });
+      const json = await res.json();
+      const all  = (json.data||[]).filter(e=>e.owner_id===user.id);
+      if (!all.length) {
+        el.innerHTML = `<div class="empty"><div class="empty-icon">🚜</div><p>No equipment listed</p><a href="add-equipment.html" class="empty-btn">+ List Equipment</a></div>`;
+        return;
+      }
+      el.innerHTML = all.map(equipItem).join('');
+    } catch(err) { el.innerHTML = `<div class="empty"><p style="color:var(--red)">${err.message}</p></div>`; }
+  }
+
+  function equipItem(e) {
+    const em = {tractor:'🚜',rotavator:'⚙️',sprayer:'💧',harvester:'🌾',vehicle:'🚐',other:'🔧'};
+    return `<div class="equip-list-item">
+      <div class="equip-thumb">${e.image_url?`<img src="${e.image_url}" alt="${e.title}"/>`:(em[e.category]||'🔧')}</div>
+      <div class="equip-item-info">
+        <div class="equip-item-title">${e.title}</div>
+        <div class="equip-item-meta">${e.category} • ${e.location}</div>
+      </div>
+      <div class="equip-item-price">₹${parseFloat(e.price_per_day).toLocaleString('en-IN')}<span style="font-size:0.72rem;font-weight:400;color:var(--muted)">/day</span></div>
+      <div class="equip-item-actions">
+        <button class="toggle-avail" onclick="toggleAvail(${e.id},${e.is_available})">${e.is_available?'🟢 Available':'🔴 Hidden'}</button>
+        <a href="equipment-detail.html?id=${e.id}" class="btn-icon">👁️ View</a>
+        <button class="btn-icon" style="color:var(--red);border-color:var(--red)" onclick="deleteEquip(${e.id})">🗑️</button>
+      </div>
+    </div>`;
+  }
+
+  /* ── INCOMING ── */
+  async function loadIncoming() {
+    const tb = document.getElementById('incomingTable');
+    tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted)">Loading...</td></tr>`;
+    try {
+      const res  = await fetch(`${API}/api/bookings/incoming`, { headers: auth() });
+      const json = await res.json();
+      const bks  = json.data || [];
+      if (!bks.length) {
+        tb.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="empty-icon">📬</div><p>No incoming bookings yet</p></div></td></tr>`;
+        return;
+      }
+      tb.innerHTML = bks.map(b=>`<tr>
+        <td><strong>${b.equipment_title||'—'}</strong></td>
+        <td>${b.renter_name||'—'}<br><span style="font-size:0.72rem;color:var(--muted)">${b.renter_mobile||''}</span></td>
+        <td style="font-size:0.78rem">${b.start_date}<br>${b.end_date}</td>
+        <td style="font-weight:700;color:var(--green)">₹${parseFloat(b.total_amount||0).toLocaleString('en-IN')}</td>
+        <td>${b.payment_method?.toUpperCase()||'—'}</td>
+        <td>${statusBadge(b.status)}</td>
+        <td>
+          ${b.status==='pending'   ? `<button class="action-btn btn-confirm"  onclick="updateStatus(${b.id},'confirmed','incoming')">✅ Confirm</button><button class="action-btn btn-cancel" onclick="updateStatus(${b.id},'cancelled','incoming')">❌ Reject</button>` : ''}
+          ${b.status==='confirmed' ? `<button class="action-btn btn-complete" onclick="updateStatus(${b.id},'completed','incoming')">🏁 Complete</button>` : ''}
+          ${['completed','cancelled'].includes(b.status) ? `<span style="font-size:0.75rem;color:var(--muted)">—</span>` : ''}
+        </td>
+      </tr>`).join('');
+    } catch(err) { tb.innerHTML = `<tr><td colspan="7" style="color:var(--red);text-align:center;padding:20px">${err.message}</td></tr>`; }
+  }
+
+  /* ── PROFILE ── */
+  function loadProfile() {
+    document.getElementById('profName').value     = user?.full_name || user?.fullName || '';
+    document.getElementById('profMobile').value   = user?.mobile   || '';
+    document.getElementById('profEmail').value    = user?.email    || '';
+    document.getElementById('profRole').value     = user?.role     || '';
+    document.getElementById('profLocation').value = user?.location || '';
+    document.getElementById('profLang').value     = user?.lang_pref || 'en';
+  }
+
+  async function saveProfile() {
+    const full_name = document.getElementById('profName').value.trim();
+    const location  = document.getElementById('profLocation').value.trim();
+    const lang_pref = document.getElementById('profLang').value;
+    const alertEl   = document.getElementById('profileAlert');
+    try {
+      const res  = await fetch(`${API}/api/users/me`, {
+        method:'PUT', headers:{...auth(),'Content-Type':'application/json'},
+        body: JSON.stringify({ full_name, location, lang_pref }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        const updated = {...user, full_name, location, lang_pref};
+        localStorage.setItem('agriShareCurrentUser', JSON.stringify(updated));
+        document.getElementById('sidebarName').textContent = full_name;
+        alertEl.style.cssText = 'display:block;background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;padding:10px 14px;border-radius:8px;font-size:0.85rem;margin-top:12px';
+        alertEl.textContent = '✅ Profile updated!';
+        toast('✅ Profile saved!');
+      } else { toast('⚠️ '+json.message, false); }
+    } catch { toast('❌ Server error', false); }
+  }
+
+  /* ── STATUS UPDATE ── */
+  async function updateStatus(id, status, reloadPage) {
+    const labels = {confirmed:'confirm',cancelled:'cancel',completed:'mark as complete'};
+    if (!confirm(`Are you sure you want to ${labels[status]||status} this booking?`)) return;
+    try {
+      const res  = await fetch(`${API}/api/bookings/${id}/status`, {
+        method:'PATCH', headers:{...auth(),'Content-Type':'application/json'},
+        body: JSON.stringify({status}),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast(`✅ Booking ${status}!`);
+        if (reloadPage==='myBookings') loadMyBookings();
+        if (reloadPage==='incoming')   loadIncoming();
+        loadOverview();
+      } else { toast('⚠️ '+json.message, false); }
+    } catch { toast('❌ Server error', false); }
+  }
+
+  /* ── TOGGLE AVAILABILITY ── */
+  async function toggleAvail(id, current) {
+    try {
+      const res  = await fetch(`${API}/api/equipment/${id}`, {
+        method:'PUT', headers:{...auth(),'Content-Type':'application/json'},
+        body: JSON.stringify({is_available: current?0:1}),
+      });
+      const json = await res.json();
+      if (json.success) { toast(current?'🔴 Hidden':'🟢 Now available'); loadMyEquip(); loadOverview(); }
+      else toast('⚠️ '+json.message, false);
+    } catch { toast('❌ Server error', false); }
+  }
+
+  /* ── DELETE EQUIPMENT ── */
+  async function deleteEquip(id) {
+    if (!confirm('Delete this equipment? This cannot be undone.')) return;
+    try {
+      const res  = await fetch(`${API}/api/equipment/${id}`, { method:'DELETE', headers:auth() });
+      const json = await res.json();
+      if (json.success) { toast('🗑️ Deleted'); loadMyEquip(); loadOverview(); }
+      else toast('⚠️ '+json.message, false);
+    } catch { toast('❌ Server error', false); }
+  }
+
+  /* ── REVIEW ── */
+  let selectedStar = 5;
+  function openReview(bookingId) {
+    document.getElementById('reviewBookingId').value = bookingId;
+    document.getElementById('reviewComment').value   = '';
+    setStar(5);
+    document.getElementById('reviewModal').classList.add('show');
+  }
+  function closeReview() { document.getElementById('reviewModal').classList.remove('show'); }
+  function setStar(n) {
+    selectedStar = n;
+    document.querySelectorAll('.star-btn').forEach((b,i) => b.classList.toggle('active', i<n));
+  }
+  async function submitReview() {
+    const booking_id = document.getElementById('reviewBookingId').value;
+    const comment    = document.getElementById('reviewComment').value.trim();
+    try {
+      const res  = await fetch(`${API}/api/reviews`, {
+        method:'POST', headers:{...auth(),'Content-Type':'application/json'},
+        body: JSON.stringify({booking_id:parseInt(booking_id), rating:selectedStar, comment}),
+      });
+      const json = await res.json();
+      if (json.success) { toast('⭐ Review submitted!'); closeReview(); loadMyBookings(); }
+      else toast('⚠️ '+json.message, false);
+    } catch { toast('❌ Server error', false); }
+  }
+
+  /* ── LOGOUT ── */
+  function logout() {
+    if (!confirm('Logout?')) return;
+    localStorage.removeItem('agriToken');
+    localStorage.removeItem('agriShareCurrentUser');
+    location.href = 'login.html';
+  }
+
+  /* ── MOBILE SIDEBAR ── */
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+  }
+
+  loadOverview();
+  
+</script>
+<script>
+// ── Push Notification Manager ──
+const AGRI_API = 'http://localhost:5000';
+
+async function initPushNotifications() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+  try {
+    // Register service worker
+    const reg = await navigator.serviceWorker.register('/sw.js');
+
+    // Check permission
+    if (Notification.permission === 'denied') return;
+
+    // Ask permission if not granted
+    if (Notification.permission !== 'granted') {
+      // Show custom prompt after 3 seconds
+      setTimeout(() => showNotifPrompt(reg), 3000);
+    }
+  } catch(err) { console.log('SW error:', err); }
+}
+
+function showNotifPrompt(reg) {
+  const token = localStorage.getItem('agriToken');
+  if (!token) return; // Only for logged in users
+
+  // Create prompt UI
+  const prompt = document.createElement('div');
+  prompt.id = 'notifPrompt';
+  prompt.innerHTML = `
+    <div style="position:fixed;bottom:90px;right:24px;background:white;border:1.5px solid #d1d5db;border-radius:12px;padding:14px 16px;max-width:280px;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:9998;font-family:'Poppins',sans-serif;animation:slideUp .3s ease">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:1.2rem">🔔</span>
+        <span style="font-size:0.85rem;font-weight:700;color:#0B3D2E">Notifications Enable Karo?</span>
+        <button onclick="document.getElementById('notifPrompt').remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#6b7280;font-size:1rem">✕</button>
+      </div>
+      <p style="font-size:0.75rem;color:#6b7280;margin-bottom:10px">Booking updates, payment alerts aur offers ke liye!</p>
+      <div style="display:flex;gap:8px">
+        <button onclick="enableNotifications('${reg ? 'yes' : 'no'}')" style="flex:1;background:#0B3D2E;color:white;border:none;border-radius:6px;padding:7px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif">✅ Haan, Enable Karo</button>
+        <button onclick="document.getElementById('notifPrompt').remove()" style="flex:1;background:#f3f4f6;color:#374151;border:none;border-radius:6px;padding:7px;font-size:0.78rem;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif">Baad Mein</button>
+      </div>
+    </div>
+    <style>@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}</style>
+  `;
+  document.body.appendChild(prompt);
+}
+
+async function enableNotifications() {
+  document.getElementById('notifPrompt')?.remove();
+
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      showToastNotif('❌ Notification permission denied');
+      return;
+    }
+
+    const reg = await navigator.serviceWorker.ready;
+
+    // Subscribe to push
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array('BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjZkFZmkufggkt3rfcA55bEdOPog')
+    });
+
+    // Save to backend
+    const token = localStorage.getItem('agriToken');
+    await fetch(`${AGRI_API}/api/notifications/subscribe`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+      body: JSON.stringify(sub)
+    });
+
+    showToastNotif('🔔 Notifications enabled! Booking updates milenge.');
+
+    // Test notification
+    setTimeout(() => {
+      new Notification('🌾 AgriShare', {
+        body: 'Notifications successfully enable ho gayi! Ab booking updates milenge.',
+        icon: '/favicon.ico'
+      });
+    }, 1000);
+
+  } catch(err) {
+    showToastNotif('Notification setup failed: ' + err.message);
+  }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw     = window.atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+function showToastNotif(msg) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0B3D2E;color:white;padding:10px 20px;border-radius:8px;font-size:0.82rem;font-weight:500;z-index:99999;font-family:Poppins,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.2)';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// Auto init when page loads
+document.addEventListener('DOMContentLoaded', initPushNotifications);
+</script>
+
+<style>
+.chat-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.chat-fab-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0B3D2E 0%, #1e7a52 100%);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 20px rgba(11,61,46,0.4);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  animation: fabPulse 3s infinite;
+}
+
+.chat-fab-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 28px rgba(11,61,46,0.5);
+}
+
+@keyframes fabPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(11,61,46,0.4); }
+  50%       { box-shadow: 0 4px 28px rgba(11,61,46,0.7), 0 0 0 8px rgba(11,61,46,0.1); }
+}
+
+.chat-fab-tooltip {
+  background: #0B3D2E;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-family: 'Poppins', sans-serif;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.chat-fab:hover .chat-fab-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.chat-fab-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  background: #f5a623;
+  border-radius: 50%;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #0B3D2E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  animation: badgeBounce 1s ease infinite;
+}
+
+@keyframes badgeBounce {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.2); }
+}
+</style>
+
+<div class="chat-fab">
+  <div class="chat-fab-tooltip">🌾 Kisan Mitra AI</div>
+  <a href="chatbot.html" class="chat-fab-btn" title="AI Assistant">
+    🌾
+    <span class="chat-fab-badge">AI</span>
+  </a>
+</div>
+</body>
+</html>
